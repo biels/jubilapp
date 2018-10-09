@@ -1,0 +1,11 @@
+{
+  "name": "jubilapp",
+  "version": "1.0.0",
+  "description": "Aplicació d'esdeveniments per a la gent gran",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC"
+}
