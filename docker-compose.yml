@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    build: ./packages/web
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/src
+  mobile:
+    build: ./packages/mobile
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/src
+  db:
+    image: redis
+    environment:
+      POSTGRES_USER: jubilapp-user
+      POSTGRES_PASSWORD: example
