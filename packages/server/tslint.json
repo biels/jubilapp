@@ -1,15 +1,15 @@
 {
-    "defaultSeverity": "error",
+    "defaultSeverity": "warn",
     "extends": [
         "tslint:recommended"
     ],
     "jsRules": {
-        "no-unused-expression": true
+        "no-unused-expression": false
     },
     "rules": {
         "eofline": false,
         "quotemark": [
-            true,
+            false,
             "single"
         ],
         "indent": false,
@@ -20,7 +20,7 @@
             false
         ],
         "max-line-length": [
-            true,
+            false,
             150
         ],
         "member-ordering": [
