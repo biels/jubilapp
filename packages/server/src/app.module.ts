@@ -4,11 +4,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ModelModule } from './model/model.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProfileModule } from './profile/profile.module';
+import { PassportModule } from '@nestjs/passport';
 
 let isProduction = process.env.NODE_ENV === 'production';
 const sourceDir = isProduction ? 'dist' : 'src';
 @Module({
   imports: [
+    PassportModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -20,7 +23,7 @@ const sourceDir = isProduction ? 'dist' : 'src';
       synchronize: true,
       dropSchema: !isProduction,
     }),
-    AuthModule, ModelModule],
+    AuthModule, ModelModule, ProfileModule],
   controllers: [AppController],
   providers: [AppService],
 })

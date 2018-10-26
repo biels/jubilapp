@@ -8,11 +8,17 @@ export class User {
   @Column()
   name: string;
 
-  @Column({unique: true})
+  @Column({ nullable: true })
+  surname: string;
+
+  @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
+
+  @Column({ nullable: true })
+  phone: string;
 
 
 }

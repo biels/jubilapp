@@ -7,6 +7,7 @@ import { AuthModule } from '../src/auth/auth.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
+  // @ts-ignore
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule, AuthModule],
@@ -25,15 +26,19 @@ describe('AppController (e2e)', () => {
   describe('Authentication', () => {
     const email = 'username@gmail.com';
     const password = '12345';
-    const name = 'username';
+    const name = 'name';
+    const surname = 'surname';
+    const phone = '+3468384853';
     let token;
     it('Register a non existing user', () => {
       return request(app.getHttpServer())
         .post('/auth/register')
         .send({
           name,
+          surname,
           email,
           password,
+          phone
         })
         .expect(201);
     });
@@ -42,8 +47,10 @@ describe('AppController (e2e)', () => {
         .post('/auth/register')
         .send({
           name,
+          surname,
           email,
           password,
+          phone
         })
         .expect(400)
         .expect({
@@ -95,7 +102,7 @@ describe('AppController (e2e)', () => {
         })
         .expect(201)
         .ok(res => {
-          token = res.text;
+          token = res.body.token;
           return token.length > 0;
         });
     });

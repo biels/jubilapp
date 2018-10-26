@@ -1,19 +1,23 @@
 version: '3'
 services:
-  web:
-    build: ./packages/web
+  server:
+    build: ./packages/server
     ports:
       - "3000:3000"
     volumes:
       - .:/src
-  mobile:
-    build: ./packages/mobile
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/src
+    environment:
+      DOCKER_ENV: docker
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: jubilapp-user
+      DB_PASS: jubilapp-pass
+      DB_NAME: jubilapp
+
   db:
-    image: redis
+    image: postgres
     environment:
       POSTGRES_USER: jubilapp-user
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: jubilapp-pass
+      POSTGRES_DB: jubilapp
