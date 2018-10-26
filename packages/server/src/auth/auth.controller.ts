@@ -11,7 +11,8 @@ export class AuthController {
   @Post('login')
   async createToken(@Body() body): Promise<any> {
     const {email, password} = body;
-    return await this.authService.signIn(email, password);
+    let token = await this.authService.signIn(email, password);
+    return {token};
   }
 
   @Post('register')
