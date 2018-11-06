@@ -9,11 +9,11 @@ export class Event {
   @Column()
   name: string;
 
-  @Column()
+  @Column({nullable: true})
   description: string;
 
   @Column()
-  type: string;
+  type: EventCategory;
 
   @Column()
   startDate: Date;
