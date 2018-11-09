@@ -6,6 +6,7 @@ import { ModelModule } from './model/model.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfileModule } from './profile/profile.module';
 import { PassportModule } from '@nestjs/passport';
+import {EventModule} from "./event/event.module";
 
 let isProduction = process.env.NODE_ENV === 'production';
 const sourceDir = isProduction ? 'dist' : 'src';
@@ -23,7 +24,7 @@ const sourceDir = isProduction ? 'dist' : 'src';
       synchronize: true,
       dropSchema: !isProduction,
     }),
-    AuthModule, ModelModule, ProfileModule],
+    AuthModule, ModelModule, ProfileModule, EventModule],
   controllers: [AppController],
   providers: [AppService],
 })

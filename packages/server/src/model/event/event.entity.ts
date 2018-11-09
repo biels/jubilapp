@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user/user.entity';
+import {EventCategory} from "./event-category.enum";
 
 @Entity()
 export class Event {

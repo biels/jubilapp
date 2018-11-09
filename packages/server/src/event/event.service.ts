@@ -15,7 +15,10 @@ export class EventService {
     }
 
     async createEvent(body: EventCreationBody, user: User){
+
         let event = this.eventRepository.create(body);
+        console.log(event.name)
         event.user = user
+        return await this.eventRepository.save(event)
     }
 }

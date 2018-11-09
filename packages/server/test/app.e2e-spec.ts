@@ -123,6 +123,7 @@ describe('AppController (e2e)', () => {
     });
     describe('Events', () => {
         it('creates an event', () => {
+
             let eventInput = {
                 name: 'sample',
                 description: 'description',
