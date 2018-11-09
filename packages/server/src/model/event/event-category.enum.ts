@@ -1,4 +1,1 @@
-enum EventCategory {
-    david = 'fokfok',
-    bejar = 'david'
-}
+enum EventCategory {    art = 'art',    sports = 'sports',    culture = 'culture',    trips = 'trips',    workshops = 'workshops',    leisure = 'leisure'}
