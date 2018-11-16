@@ -33,8 +33,22 @@ export class AuthService {
     }
   }
 
+    async addkm(km: number, email: string): Promise<User> {
+        const user = await this.userRepository.findOneByEmail(email);
+        if(user == null) throw new UnauthorizedException();
+        user.km = km;
+        this.userRepository.save(user);
+        return (user) as User;
+    }
+
+
   async validateUser(payload: JwtPayload): Promise<any> {
     return await this.userRepository.findOneByEmail(payload.email);
   }
 
+  async getkm(email: any): Promise<any> {
+      const user = await this.userRepository.findOneByEmail(email);
+      if(user == null) throw new UnauthorizedException();
+      return user.km;
+  }
 }
