@@ -1,33 +1,38 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user/user.entity';
-import {EventCategory} from "./event-category.enum";
+import { EventCategory } from './event-category.enum';
+import { EventAttendee } from '../event-attendee/event-attendee.entity';
 
 @Entity()
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({nullable: false})
   name: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   description: string;
 
-  @Column()
+  @Column({nullable: true})
   type: EventCategory;
 
-  @Column()
+  @Column({nullable: true})
   startDate: Date;
 
-  @Column()
+  @Column({nullable: true})
   endDate: Date;
 
   @ManyToOne(type => User, user => user.events)
   user: User;
 
-  @Column()
+  @Column({nullable: true})
   location: string;
 
+  @Column({ nullable: true })
+  capacity: string;
 
+  @OneToMany(type => EventAttendee, eventAttendee => eventAttendee.event)
+  eventAttendees: EventAttendee[];
 
 }
