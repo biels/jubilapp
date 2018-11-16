@@ -1,24 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import {EventRepository} from "../model/event/event.repository";
-import {InjectRepository} from '@nestjs/typeorm';
-import {Event} from "../model/event/event.entity";
-import {EventCreationBody} from "./interfaces/event-creation-body.interface";
-import {User} from "../model/user/user.entity";
+import { InjectRepository } from '@nestjs/typeorm';
+import { EventRepository } from '../model/event/event.repository';
+import { User } from '../model/user/user.entity';
+import { Repository } from 'typeorm';
+import { Event } from '../model/event/event.entity';
+import { EventBody } from './interfaces/event-body.interface';
 
 @Injectable()
 export class EventService {
 
-    constructor(
-        @InjectRepository(EventRepository)
-        private readonly eventRepository: EventRepository
-    ) {
-    }
+  constructor(
+     @InjectRepository(EventRepository)
+     private readonly eventRepository: EventRepository
+  ) {
+  }
 
-    async createEvent(body: EventCreationBody, user: User){
-
-        let event = this.eventRepository.create(body);
-        console.log(event.name)
-        event.user = user
-        return await this.eventRepository.save(event)
-    }
+  async allEvents(){
+    return this.eventRepository.find()
+  }
+  async eventsForUser(user: User){
+    return this.eventRepository.find({where: {user}})
+  }
+  async oneEvent(id){
+    return this.eventRepository.findOne(id)
+  }
+  async createEvent(user: User, body: EventBody){
+    return await this.eventRepository.save({...body, user})
+  }
+  async updateEvent(id, body: Partial<EventBody>){
+    return await this.eventRepository.update({id}, body)
+  }
+  async deleteOwnEvent(user, id){
+    return await this.eventRepository.delete({id})
+  }
 }

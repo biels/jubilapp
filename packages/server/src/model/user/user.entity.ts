@@ -24,5 +24,8 @@ export class User {
   @OneToMany(type => Event, event => event.user)
   events: Event[];
 
+  @Column({nullable: true})
+  searchDistance: number;
+
 
 }

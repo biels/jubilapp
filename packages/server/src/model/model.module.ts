@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
-import { EventModule } from './event/event.module';
 import { config } from 'dotenv';
+import { EventAttendeeModule } from './event-attendee/event-attendee.module';
+import { EventModelModule } from './event/event-model.module';
 
 config();
 
 @Module({
   imports: [
     UserModule,
-    EventModule,
+    EventModelModule,
+    EventAttendeeModule,
   ],
   exports: [
-    UserModule
+    UserModule,
+    EventModelModule,
+    EventAttendeeModule
   ]
 })
 export class ModelModule {}
