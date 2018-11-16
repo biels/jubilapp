@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Patch, Post, Req, UseGuards} from '@nestjs/common';
+import {BadRequestException, Body, Controller, Get, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { User } from '../model/user/user.entity';
@@ -21,15 +21,24 @@ export class AuthController {
   }
 
   @Patch('distance')
-    async addkm(@Body() body): Promise<User> {
-      const {km, email} = body;
-      return await this.authService.addkm(km, email);
+  async addkm(@Req() request): Promise<User> {
+    const {km} = request.body;
+    if (request.user == null) throw new BadRequestException('You need to be logged to add km');
+    return await this.authService.addkm(km, request.user);
   }
 
   @Get('distance')
-    async getkm(@Body() body): Promise<any> {
-      const {email} = body;
-      return await this.authService.getkm(email);
+    async getkm(@Req() request): Promise<any> {
+      if (request.user == null) throw new BadRequestException('You need to be logged to get km');
+      return await this.authService.getkm(request.user);
   }
+  @Patch('interests')
+  async addinterest(@Req() request): Promise<User> {
+      const {interests} = request.body;
+      if (request.user == null) throw new BadRequestException('You need to be logged to add km');
+        return await this.authService.addinterests(interests, request.user);
+    }
+
+
 
 }

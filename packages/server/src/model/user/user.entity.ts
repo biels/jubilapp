@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Event } from '../event/event.entity';
+import {EventCategory} from "../event/event-category.enum";
 
 @Entity()
 export class User {
@@ -23,6 +24,9 @@ export class User {
 
   @Column({default: 15})
   km: number;
+
+  @Column({nullable: true})
+  interests: EventCategory;
 
   @OneToMany(type => Event, event => event.user)
   events: Event[];
