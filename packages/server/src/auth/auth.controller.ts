@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {Body, Controller, Get, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { User } from '../model/user/user.entity';
@@ -20,5 +20,16 @@ export class AuthController {
     return await this.authService.register(body);
   }
 
+  @Patch('distance')
+    async addkm(@Body() body): Promise<User> {
+      const {km, email} = body;
+      return await this.authService.addkm(km, email);
+  }
+
+  @Get('distance')
+    async getkm(@Body() body): Promise<any> {
+      const {email} = body;
+      return await this.authService.getkm(email);
+  }
 
 }

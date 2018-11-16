@@ -21,6 +21,9 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
+  @Column({default: 15})
+  km: number;
+
   @OneToMany(type => Event, event => event.user)
   events: Event[];
 

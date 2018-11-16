@@ -107,6 +107,37 @@ describe('AppController (e2e)', () => {
                     return token.length > 0;
                 });
         });
+
+        it('Getting default km of an existing user', () => {
+            return request(app.getHttpServer())
+                .get('/auth/distance')
+                .send({
+                    email,
+                })
+                .expect(200)
+                .expect("15")
+        });
+
+        it('Adding km to an existing user', () => {
+            return request(app.getHttpServer())
+                .patch('/auth/distance')
+                .send({
+                    km: 20,
+                    email,
+                })
+                .expect(200)
+        });
+
+        it('Getting modified km of an existing user', () => {
+            return request(app.getHttpServer())
+                .get('/auth/distance')
+                .send({
+                    email,
+                })
+                .expect(200)
+                .expect("20")
+        });
+
         it('Access a private endpoint without token', () => {
             return request(app.getHttpServer())
                 .get('/private')
