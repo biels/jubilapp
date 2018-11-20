@@ -12,4 +12,6 @@ export class ProfileController {
         const {password, ...rest}: Partial<User> = request.user;
         return rest;
     }
+
+
 }
