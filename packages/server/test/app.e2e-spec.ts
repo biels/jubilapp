@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import {AppModule} from './../src/app.module';
 import {AuthModule} from '../src/auth/auth.module';
 import {expand} from "rxjs/operators";
+import {User} from "../src/model/user/user.entity";
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
@@ -111,19 +112,19 @@ describe('AppController (e2e)', () => {
         it('Getting default km of an existing user', () => {
             return request(app.getHttpServer())
                 .get('/auth/distance')
-                .send({
-                    email,
-                })
+                .set('Authorization', `Bearer ${token}`)
                 .expect(200)
                 .expect("15")
         });
 
         it('Adding km to an existing user', () => {
+            console.log(token)
+
             return request(app.getHttpServer())
                 .patch('/auth/distance')
+                .set('Authorization', `Bearer ${token}`)
                 .send({
                     km: 20,
-                    email,
                 })
                 .expect(200)
         });
@@ -131,9 +132,7 @@ describe('AppController (e2e)', () => {
         it('Getting modified km of an existing user', () => {
             return request(app.getHttpServer())
                 .get('/auth/distance')
-                .send({
-                    email,
-                })
+                .set('Authorization', `Bearer ${token}`)
                 .expect(200)
                 .expect("20")
         });
