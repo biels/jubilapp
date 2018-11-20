@@ -7,6 +7,7 @@ export interface EventBody {
   type: EventCategory;
   startDate?: Date;
   endDate?: Date;
-  location?: string;
+  longitude: number
+  latitude: number
   capacity?: string;
 }

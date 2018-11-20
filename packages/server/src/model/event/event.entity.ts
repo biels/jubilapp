@@ -26,8 +26,11 @@ export class Event {
   @ManyToOne(type => User, user => user.events)
   user: User;
 
-  @Column({nullable: true})
-  location: string;
+  @Column()
+  longitude: number;
+
+  @Column()
+  latitude: number;
 
   @Column({ nullable: true })
   capacity: string;
