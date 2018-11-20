@@ -1,1 +1,1 @@
-export enum EventCategory {    art = 'art',    sports = 'sports',    culture = 'culture',    trips = 'trips',    workshops = 'workshops',    leisure = 'leisure'}
+export enum EventCategory {    art,    sports,    culture,    trips,    workshops,    leisure}

@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { User } from '../model/user/user.entity';
 import { RegistrationBody } from './interfaces/registration-body.interface';
+import {EventCategory} from "../model/event/event-category.enum";
 
 
 @Injectable()
@@ -33,12 +34,10 @@ export class AuthService {
     }
   }
 
-    async addkm(km: number, email: string): Promise<User> {
-        const user = await this.userRepository.findOneByEmail(email);
-        if(user == null) throw new UnauthorizedException();
-        user.km = km;
-        this.userRepository.save(user);
-        return (user) as User;
+  async addkm(km: number, user: User): Promise<User> {
+      user.km = km;
+      this.userRepository.save(user);
+      return (user) as User;
     }
 
 
@@ -46,9 +45,17 @@ export class AuthService {
     return await this.userRepository.findOneByEmail(payload.email);
   }
 
-  async getkm(email: any): Promise<any> {
-      const user = await this.userRepository.findOneByEmail(email);
-      if(user == null) throw new UnauthorizedException();
+  async getkm(user: User): Promise<any> {
       return user.km;
+  }
+
+  async addInterests(user: User, interests: Array<string>) {
+
+      for (var i = 0; i < interests.length; ++i){
+        const string: string = interests[i];
+        console.log(EventCategory[string]);
+      }
+      this.userRepository.save(user);
+      return (user) as User;
   }
 }
