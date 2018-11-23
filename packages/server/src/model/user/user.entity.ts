@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Event } from '../event/event.entity';
 import {EventCategory} from "../event/event-category.enum";
+import {EventAttendee} from "../event-attendee/event-attendee.entity";
 
 @Entity()
 export class User {
@@ -22,16 +23,16 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @Column({default: 15})
-  km: number;
-
-  @Column({ nullable: true })
-  interests: number;
+  @Column({ default: "000000" })
+  interests: string;
 
   @OneToMany(type => Event, event => event.user)
   events: Event[];
 
-  @Column({nullable: true})
+  @OneToMany(type => EventAttendee, eventAttendee => eventAttendee.user)
+  attendingEvents: EventAttendee[];
+
+  @Column({nullable: true, default: 15})
   searchDistance: number;
 
 
