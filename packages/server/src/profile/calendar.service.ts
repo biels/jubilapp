@@ -17,11 +17,11 @@ export class CalendarService {
   async generateCalendarForUser(user: User){
     const getUserWithEvents = this.userRepository.findOneOrFail(user.id, {relations: ['attendingEvents', 'user.attendingEvents']});
     const mapEventToICalEvent = (event: EventAttendee) => {};
-    const events: ical.EventData[] = user.attendingEvents.map(mapEventToICalEvent)
-    const iCalCalendar = ical({
-      name: 'Calendar for ' + user.name,
-      events
-    });
-    return iCalCalendar.toString()
+    // const events: ical.EventData[] = user.attendingEvents.map(mapEventToICalEvent)
+    // const iCalCalendar = ical({
+    //   name: 'Calendar for ' + user.name,
+    //   events
+    // });
+    // return iCalCalendar.toString()
   }
 }
