@@ -23,4 +23,12 @@ export class ProfileController {
     if (request.user == null) throw new BadRequestException('You need to be logged to add interest');
     return await this.profileService.addInterests(interests, request.user);
   }
+
+  @Get('interests')
+  @UseGuards(AuthGuard())
+  async getInterest(@Req() request): Promise<any> {
+      console.log(request.body.interests);
+      if (request.user == null) throw new BadRequestException('You need to be logged to add interest');
+      return await this.profileService.getInterests(request.user);
+  }
 }
