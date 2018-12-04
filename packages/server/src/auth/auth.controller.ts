@@ -20,25 +20,6 @@ export class AuthController {
     return await this.authService.register(body);
   }
 
-  @Patch('distance')
-  async addkm(@Req() request): Promise<User> {
-    const {km} = request.body;
-    if (request.user == null) throw new BadRequestException('You need to be logged to add km');
-    return await this.authService.addkm(km, request.user);
-  }
-
-  @Get('distance')
-    async getkm(@Req() request): Promise<any> {
-      if (request.user == null) throw new BadRequestException('You need to be logged to get km');
-      return await this.authService.getkm(request.user);
-  }
-  @Patch('interests')
-  async addinterest(@Req() request): Promise<User> {
-      const {interests} = request.body;
-      if (request.user == null) throw new BadRequestException('You need to be logged to add km');
-        return await this.authService.addinterests(interests, request.user);
-    }
-
 
 
 
