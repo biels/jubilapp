@@ -3,5 +3,6 @@ export interface EventCreationBody {
     description: string,
     startDate: Date,
     endDate: Date
-    location: string
+    longitude: number
+    latitude: number
 }

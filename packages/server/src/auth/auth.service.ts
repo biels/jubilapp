@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { User } from '../model/user/user.entity';
 import { RegistrationBody } from './interfaces/registration-body.interface';
+import {EventCategory} from "../model/event/event-category.enum";
 
 
 @Injectable()
@@ -48,8 +49,12 @@ export class AuthService {
       return user.km;
   }
 
-  async addinterests(user: User, interests: any) {
-      user.interests = interests;
+  async addInterests(user: User, interests: Array<string>) {
+
+      for (var i = 0; i < interests.length; ++i){
+        const string: string = interests[i];
+        console.log(EventCategory[string]);
+      }
       this.userRepository.save(user);
       return (user) as User;
   }

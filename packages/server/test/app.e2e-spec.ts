@@ -118,6 +118,8 @@ describe('AppController (e2e)', () => {
         });
 
         it('Adding km to an existing user', () => {
+            console.log(token)
+
             return request(app.getHttpServer())
                 .patch('/auth/distance')
                 .set('Authorization', `Bearer ${token}`)

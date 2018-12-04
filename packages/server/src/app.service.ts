@@ -15,7 +15,7 @@ export class AppService {
   async root() {
     let newUser = this.userRepository.create();
     newUser.name = 'NewUser';
-    this.userRepository.save(newUser);
+    await this.userRepository.save(newUser);
     const users: User[] = await this.userRepository.find({});
     const listOfUsers = users.map(u => u.name).join(', ');
     return `Users: ${listOfUsers}`;
