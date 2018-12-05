@@ -34,28 +34,8 @@ export class AuthService {
     }
   }
 
-  async addkm(km: number, user: User): Promise<User> {
-      user.km = km;
-      this.userRepository.save(user);
-      return (user) as User;
-    }
-
-
   async validateUser(payload: JwtPayload): Promise<any> {
     return await this.userRepository.findOneByEmail(payload.email);
   }
 
-  async getkm(user: User): Promise<any> {
-      return user.km;
-  }
-
-  async addInterests(user: User, interests: Array<string>) {
-
-      for (var i = 0; i < interests.length; ++i){
-        const string: string = interests[i];
-        console.log(EventCategory[string]);
-      }
-      this.userRepository.save(user);
-      return (user) as User;
-  }
 }

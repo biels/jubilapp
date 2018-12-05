@@ -11,24 +11,21 @@ export class ProfileController {
   @UseGuards(AuthGuard())
   async root(@Req() request) {
     if(request.user == null) throw new BadRequestException('You need to be logged in to view your profile')
-    const {password, ...rest}: Partial<User> = request.user;
-    return rest;
+    const {password, interests, ...rest}: Partial<User> = request.user;
+    const transformedInterests = this.profileService.transformInterests(interests);
+    return {...rest,interests: transformedInterests};
   }
 
-  @Patch('interests')
+  @Patch()
   @UseGuards(AuthGuard())
-  async addInterest(@Req() request): Promise<User> {
-    console.log(request.body.interests);
-    const interests: Array<string> = request.body.interests;
+  async patchProfile(@Req() request) {
     if (request.user == null) throw new BadRequestException('You need to be logged to add interest');
-    return await this.profileService.addInterests(interests, request.user);
+    const interests: Array<string> = request.body.interests;
+    if (interests != null) await this.profileService.patchInterests(interests, request.user);
+    const {password, ...rest}: Partial<User> = request.user;
+    const transformedInterests = this.profileService.transformInterests(request.user.interests);
+    return {...rest,interests: transformedInterests};
+
   }
 
-  @Get('interests')
-  @UseGuards(AuthGuard())
-  async getInterest(@Req() request): Promise<any> {
-      console.log(request.body.interests);
-      if (request.user == null) throw new BadRequestException('You need to be logged to add interest');
-      return await this.profileService.getInterests(request.user);
-  }
 }
