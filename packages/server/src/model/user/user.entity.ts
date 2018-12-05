@@ -35,5 +35,21 @@ export class User {
   @Column({nullable: true, default: 15})
   searchDistance: number;
 
+  @Column({nullable: true})
+  NIF: string;
+
+  @Column({nullable: true})
+  address: string;
+
+  @Column({nullable: true})
+  city: string;
+
+  @Column({nullable: true})
+  postcode: string;
+
+  @Column({nullable: true})
+  country: string;
+
+
 
 }
