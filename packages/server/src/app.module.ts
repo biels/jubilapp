@@ -24,7 +24,8 @@ const sourceDir = isProduction ? 'dist' : 'src';
             database: process.env.DB_NAME,
             entities: [`${__dirname}./../${sourceDir}/**/*.entity{.ts,.js}`],
             synchronize: true,
-            dropSchema: !isProduction,
+
+            dropSchema: false && !isProduction,
         }),
         AuthModule, ProfileModule, EventModule],
     controllers: [AppController],
