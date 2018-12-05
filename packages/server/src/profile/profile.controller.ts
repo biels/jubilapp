@@ -22,6 +22,9 @@ export class ProfileController {
     if (request.user == null) throw new BadRequestException('You need to be logged to add interest');
     const interests: Array<string> = request.body.interests;
     if (interests != null) await this.profileService.patchInterests(interests, request.user);
+    const {password, ...rest}: Partial<User> = request.user;
+    const transformedInterests = this.profileService.transformInterests(request.user.interests);
+    return {...rest,interests: transformedInterests};
 
   }
 
