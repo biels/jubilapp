@@ -1,8 +1,17 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { AuthGuard } from '@nestjs/passport';
-import { EventBody } from './interfaces/event-body.interface';
-import { Request } from 'express';
 
 @Controller('event')
 export class EventController {
@@ -13,8 +22,19 @@ export class EventController {
   }
 
   @Get()
-  async get() {
-    return { events: await this.eventService.allEvents() };
+  async get(@Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate) {
+    if(lat && long){
+      // TODO Filter based on location
+    }
+    return {
+      events: await this.eventService.allEvents(),
+      query: {
+        latitude: lat,
+        longitude: long,
+        fromDate,
+        toDate,
+      },
+    };
   }
 
   @Get('own')
