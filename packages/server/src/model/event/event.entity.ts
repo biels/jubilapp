@@ -14,7 +14,7 @@ export class Event {
   @Column({ nullable: true })
   description: string;
 
-  @Column({nullable: true})
+  @Column({ default: 0})
   type: EventCategory;
 
   @Column({nullable: true})

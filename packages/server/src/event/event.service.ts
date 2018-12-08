@@ -5,6 +5,7 @@ import { User } from '../model/user/user.entity';
 import { Repository } from 'typeorm';
 import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
+import { EventCategory } from '../model/event/event-category.enum';
 
 @Injectable()
 export class EventService {
@@ -25,10 +26,10 @@ export class EventService {
     return this.eventRepository.findOne(id)
   }
   async createEvent(user: User, body: EventBody){
-    return await this.eventRepository.save({...body, user})
+    return await this.eventRepository.save({...body, type: EventCategory[body.type], user})
   }
   async updateEvent(id, body: Partial<EventBody>){
-    return await this.eventRepository.update({id}, body)
+    return await this.eventRepository.update({id}, {...body, type: (EventCategory[body.type])})
   }
   async deleteOwnEvent(user, id){
     return await this.eventRepository.delete({id})

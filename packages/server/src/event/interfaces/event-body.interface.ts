@@ -4,7 +4,7 @@ import { User } from '../../model/user/user.entity';
 export interface EventBody {
   name: string;
   description?: string;
-  type: EventCategory;
+  type: string;
   startDate?: Date;
   endDate?: Date;
   longitude: number

@@ -17,6 +17,7 @@ import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Event } from '../model/event/event.entity';
 import { User } from 'model/user/user.entity';
+import { EventCategory } from '../model/event/event-category.enum';
 
 @Controller('event')
 export class EventController {
@@ -25,12 +26,13 @@ export class EventController {
     private readonly eventService: EventService,
   ) {
   }
-
+  transformEventType = event => ({...event, type: EventCategory[event.type]});
   @Get()
   @UseGuards(AuthGuard())
   async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
+    let showing, total, totalAfterPast;
     let filteredEvents: Event[] = allEvents;
     let filteredByLocation;
     let filteredByDate;
@@ -38,8 +40,10 @@ export class EventController {
     let warnings = [];
     let radius;
     let onlyInMyInterests;
-    lat = Number(lat)
-    long = Number(long)
+    if (lat != null) lat = Number(lat);
+    if (long != null) long = Number(long);
+    past = Boolean(past);
+    forMe = Boolean(forMe);
     if (lat != null && !_.isFinite(lat)) {
       warnings.push('Ignoring lat (latitude) as it is not valid');
       lat = null;
@@ -59,16 +63,17 @@ export class EventController {
     if (!past) {
       filteredEvents = filteredEvents
         .filter(event => moment(event.startDate).isAfter(new Date()));
+      totalAfterPast = filteredEvents.length;
     } else {
       showingPast = true;
     }
     if (forMe) {
-      if (user.interests = null) warnings.push('The user has not interests in the profile');
+      if (user.interests == null) warnings.push('The user does not have interests in the profile');
       else {
         for (let i = 0; i < 6; ++i) {
           if (user.interests[i] === '0') {
             filteredEvents = filteredEvents
-                .filter(event => event.type != i);
+              .filter(event => event.type !== i);
           }
         }
         onlyInMyInterests = true;
@@ -92,8 +97,8 @@ export class EventController {
     if (lat && long && user) {
       const eventsWithLocation = filteredEvents
         .filter(event => event.latitude != null && event.longitude != null);
-      if(eventsWithLocation.length === 0) {
-        warnings.push('There are no events with a defined location in the selected range. Add some first.')
+      if (eventsWithLocation.length === 0) {
+        warnings.push('There are no events with a defined location in the selected range. Add some first.');
       }
       radius = user.searchDistance * 1000 || 5000;
       filteredEvents = eventsWithLocation
@@ -108,9 +113,17 @@ export class EventController {
     if ((lat || long) && !user) warnings.push('You need to be logged in to be able to filter by location');
     if ((lat && !long) || (long && !lat)) warnings.push('You need to provide both latitude and longitude (lat and long) when filtering by location');
     if (warnings.length === 0) warnings = undefined;
-    radius = `${(radius/1000).toFixed(2)} km`
+    if(filteredByLocation) radius = `${(radius / 1000).toFixed(2)} km`;
+    if(!showingPast && (filteredEvents.length !== totalAfterPast)){
+      showing = filteredEvents.length;
+      total = totalAfterPast;
+    }
+    if(showingPast && (filteredEvents.length !== allEvents.length)){
+      showing = filteredEvents.length;
+      total = allEvents.length;
+    }
+    const eventsPayload = filteredEvents.map(this.transformEventType)
     return {
-
       filter: {
         filteredByLocation,
         filteredByDate,
@@ -121,9 +134,11 @@ export class EventController {
         radius,
         fromDate,
         toDate,
+        showing,
+        total,
       },
       warnings,
-      events: filteredEvents,
+      events: eventsPayload,
     };
   }
 
@@ -139,19 +154,19 @@ export class EventController {
   async createEvent(@Req() request) {
     if (request.user == null) throw new BadRequestException('You need to be logged in to create an event');
     console.log(`eventBody`, request.body, 1);
-    return { events: await this.eventService.createEvent(request.user, request.body) };
+    return { events: this.transformEventType(await this.eventService.createEvent(request.user, request.body)) };
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard())
   async updateEvent(@Req() request, @Param('id') id) {
     if (request.user == null) throw new BadRequestException('You need to be logged in to create an event');
-    return { events: await this.eventService.updateEvent(id, request.body) };
+    return { events: this.transformEventType(await this.eventService.updateEvent(id, request.body)) };
   }
 
   @Get(':id')
   async getOne(@Param('id') id) {
-    return { event: await this.eventService.oneEvent(id) };
+    return { event: this.transformEventType(await this.eventService.oneEvent(id)) };
   }
 
   @Delete(':id')
