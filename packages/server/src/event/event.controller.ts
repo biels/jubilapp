@@ -64,13 +64,15 @@ export class EventController {
     }
     if (forMe) {
       if (user.interests = null) warnings.push('The user has not interests in the profile');
-      for (let i = 0; i < 6; ++i) {
-        if (user.interests[i] === '0') {
-          filteredEvents = filteredEvents
-              .filter(event => event.type != i);
+      else {
+        for (let i = 0; i < 6; ++i) {
+          if (user.interests[i] === '0') {
+            filteredEvents = filteredEvents
+                .filter(event => event.type != i);
+          }
         }
+        onlyInMyInterests = true;
       }
-      onlyInMyInterests = true;
     }
     if (fromDate && toDate) {
       filteredEvents = filteredEvents
@@ -102,7 +104,7 @@ export class EventController {
         ));
       filteredByLocation = true;
     }
-
+    if ((forMe) && !user) warnings.push('You need to be logged in to be able to filter by interests');
     if ((lat || long) && !user) warnings.push('You need to be logged in to be able to filter by location');
     if ((lat && !long) || (long && !lat)) warnings.push('You need to provide both latitude and longitude (lat and long) when filtering by location');
     if (warnings.length === 0) warnings = undefined;
