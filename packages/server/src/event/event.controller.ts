@@ -63,8 +63,14 @@ export class EventController {
       showingPast = true;
     }
     if (forMe) {
-      warnings.push('Interest filtering is not yet implemented. Showing events for all interests.');
-      onlyInMyInterests = false;
+      if (user.interests = null) warnings.push('The user has not interests in the profile');
+      for (let i = 0; i < 6; ++i) {
+        if (user.interests[i] === '0') {
+          filteredEvents = filteredEvents
+              .filter(event => event.type != i);
+        }
+      }
+      onlyInMyInterests = true;
     }
     if (fromDate && toDate) {
       filteredEvents = filteredEvents
@@ -107,6 +113,7 @@ export class EventController {
         filteredByLocation,
         filteredByDate,
         showingPast,
+        onlyInMyInterests,
         latitude: lat,
         longitude: long,
         radius,
