@@ -26,7 +26,9 @@ export class EventController {
     private readonly eventService: EventService,
   ) {
   }
-  transformEventType = event => ({...event, type: EventCategory[event.type]});
+
+  transformEventType = event => ({ ...event, type: EventCategory[event.type] });
+
   @Get()
   @UseGuards(AuthGuard())
   async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe) {
@@ -113,16 +115,16 @@ export class EventController {
     if ((lat || long) && !user) warnings.push('You need to be logged in to be able to filter by location');
     if ((lat && !long) || (long && !lat)) warnings.push('You need to provide both latitude and longitude (lat and long) when filtering by location');
     if (warnings.length === 0) warnings = undefined;
-    if(filteredByLocation) radius = `${(radius / 1000).toFixed(2)} km`;
-    if(!showingPast && (filteredEvents.length !== totalAfterPast)){
+    if (filteredByLocation) radius = `${(radius / 1000).toFixed(2)} km`;
+    if (!showingPast && (filteredEvents.length !== totalAfterPast)) {
       showing = filteredEvents.length;
       total = totalAfterPast;
     }
-    if(showingPast && (filteredEvents.length !== allEvents.length)){
+    if (showingPast && (filteredEvents.length !== allEvents.length)) {
       showing = filteredEvents.length;
       total = allEvents.length;
     }
-    const eventsPayload = filteredEvents.map(this.transformEventType)
+    const eventsPayload = filteredEvents.map(this.transformEventType);
     return {
       filter: {
         filteredByLocation,

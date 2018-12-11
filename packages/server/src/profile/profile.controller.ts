@@ -32,7 +32,7 @@ export class ProfileController {
     const existingInterests = this.profileService.decodeInterests(user.interests);
     const encodedInterests = this.profileService.encodeInterests(interests || existingInterests);
     const newUser = { ...user, ...rest, interests: encodedInterests };
-    await this.userRepository.save(newUser);
+    return await this.userRepository.save(newUser);
   }
 
 }

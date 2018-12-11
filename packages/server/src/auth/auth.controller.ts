@@ -16,8 +16,13 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: RegistrationBody): Promise<User> {
-    return await this.authService.register(body);
+  async register(@Body() body: RegistrationBody): Promise<any> {
+    const register = await this.authService.register(body);
+    let token = await this.authService.signIn(body.email, body.password);
+    return {
+      profile: register,
+      token
+    }
   }
 
 

@@ -29,7 +29,9 @@ export class EventService {
     return await this.eventRepository.save({...body, type: EventCategory[body.type], user})
   }
   async updateEvent(id, body: Partial<EventBody>){
-    return await this.eventRepository.update({id}, {...body, type: (EventCategory[body.type])})
+    const partialEntity = {...body};
+    if(body.type) partialEntity.type = EventCategory[body.type] ;
+    return await this.eventRepository.update({id}, partialEntity as any);
   }
   async deleteOwnEvent(user, id){
     return await this.eventRepository.delete({id})
