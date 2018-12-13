@@ -26,14 +26,17 @@ export class Event {
   @ManyToOne(type => User, user => user.events)
   user: User;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'decimal' })
   longitude: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'decimal' })
   latitude: number;
 
   @Column({ nullable: true })
-  capacity: string;
+  capacity: number;
+
+  @Column({ nullable: true, default: 0, type: 'decimal'})
+  price: number;
 
   @OneToMany(type => EventAttendee, eventAttendee => eventAttendee.event)
   eventAttendees: EventAttendee[];
