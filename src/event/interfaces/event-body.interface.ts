@@ -9,5 +9,5 @@ export interface EventBody {
   endDate?: Date;
   longitude: number
   latitude: number
-  capacity?: string;
+  capacity?: number;
 }
