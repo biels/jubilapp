@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -31,7 +32,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -42,10 +43,12 @@ export class EventController {
     let warnings = [];
     let radius;
     let onlyInMyInterests;
+    let onlyCreatedByMe;
     if (lat != null) lat = Number(lat);
     if (long != null) long = Number(long);
     past = Boolean(past);
     forMe = Boolean(forMe);
+    ownOnly = Boolean(ownOnly);
     if (lat != null && !_.isFinite(lat)) {
       warnings.push('Ignoring lat (latitude) as it is not valid');
       lat = null;
@@ -80,6 +83,10 @@ export class EventController {
         }
         onlyInMyInterests = true;
       }
+    }
+    if (ownOnly) {
+      filteredEvents = filteredEvents.filter(event => event.user.id === user.id);
+      onlyCreatedByMe = true;
     }
     if (fromDate && toDate) {
       filteredEvents = filteredEvents
@@ -151,6 +158,20 @@ export class EventController {
     return { events: await this.eventService.eventsForUser(request.user) };
   }
 
+  @Get('attending')
+  @UseGuards(AuthGuard())
+  async eventsIAttend(@Req() request) {
+    if (request.user == null) throw new BadRequestException('You need to be logged in to view your events');
+    const attendees = await this.eventService.getUserAttendingList(request.user);
+    const attendeeToEvent = a => this.transformEventType(a.event);
+    return {
+      events: {
+        yes: attendees.filter(a => a.attending).map(attendeeToEvent),
+        no: attendees.filter(a => !a.attending).map(attendeeToEvent),
+      },
+    };
+  }
+
   @Post()
   @UseGuards(AuthGuard())
   async createEvent(@Req() request) {
@@ -163,12 +184,49 @@ export class EventController {
   @UseGuards(AuthGuard())
   async updateEvent(@Req() request, @Param('id') id) {
     if (request.user == null) throw new BadRequestException('You need to be logged in to create an event');
+    const event = await this.eventService.oneEvent(id);
+    if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     return { events: this.transformEventType(await this.eventService.updateEvent(id, request.body)) };
   }
 
+
   @Get(':id')
   async getOne(@Param('id') id) {
-    return { event: this.transformEventType(await this.eventService.oneEvent(id)) };
+    const event = await this.eventService.oneEvent(id);
+    if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
+    return { event: this.transformEventType(event) };
+  }
+
+  @Get(':id/attendees')
+  async getOneAttendees(@Param('id') id) {
+    const event = await this.eventService.oneEvent(id);
+    if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
+    const attendees = await this.eventService.getEventAttendingList(event);
+    const attendeeToUser = a => _.pick(a.user, ['id', 'name', 'surname', 'email']);
+    return {
+      attendees: {
+        yes: attendees.filter(a => a.attending).map(attendeeToUser),
+        no: attendees.filter(a => !a.attending).map(attendeeToUser),
+      },
+    };
+  }
+
+  @Post(':id/attend')
+  @UseGuards(AuthGuard())
+  async attendToEvent(@Req() request, @Param('id') id) {
+    if (request.user == null) throw new BadRequestException('You need to be logged in to attend to an event');
+    const event = await this.eventService.oneEvent(id);
+    await this.eventService.registerAttendee(request.user, event, true);
+    return { attending: true };
+  }
+
+  @Delete(':id/attend')
+  @UseGuards(AuthGuard())
+  async dontAttendToEvent(@Req() request, @Param('id') id) {
+    if (request.user == null) throw new BadRequestException('You need to be logged in to mark you are not going to an event');
+    const event = await this.eventService.oneEvent(id);
+    await this.eventService.registerAttendee(request.user, event, false);
+    return { attending: false };
   }
 
   @Delete(':id')

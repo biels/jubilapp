@@ -13,5 +13,6 @@ export class EventAttendee {
   @ManyToOne(type => Event, event => event.eventAttendees)
   event: Event;
 
-
+  @Column()
+  attending: boolean;
 }

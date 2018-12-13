@@ -8,7 +8,7 @@ export class Event {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({nullable: false})
+  @Column({nullable: true})
   name: string;
 
   @Column({ nullable: true })
@@ -26,10 +26,10 @@ export class Event {
   @ManyToOne(type => User, user => user.events)
   user: User;
 
-  @Column()
+  @Column({ nullable: true })
   longitude: number;
 
-  @Column()
+  @Column({ nullable: true })
   latitude: number;
 
   @Column({ nullable: true })

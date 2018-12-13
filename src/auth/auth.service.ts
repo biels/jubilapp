@@ -30,7 +30,7 @@ export class AuthService {
     }catch (e) {
       if(e.code === '23505')
         throw new BadRequestException(`A user with email ${body.email} already exists`);
-      throw e;
+      throw new BadRequestException(e.message);
     }
   }
 
