@@ -30,9 +30,16 @@ export class EventController {
 
   transformEventType = event => ({ ...event, type: EventCategory[event.type] });
 
+  @Get('own')
+  @UseGuards(AuthGuard())
+  async myEvents(@Req() request) {
+    if (request.user == null) throw new BadRequestException('You need to be logged in to view your events');
+    return { events: await this.eventService.eventsForUser(request.user) };
+  }
+
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -44,11 +51,16 @@ export class EventController {
     let radius;
     let onlyInMyInterests;
     let onlyCreatedByMe;
+    let excludingOwn;
     if (lat != null) lat = Number(lat);
     if (long != null) long = Number(long);
     past = Boolean(past);
     forMe = Boolean(forMe);
     ownOnly = Boolean(ownOnly);
+    excludeOwn = Boolean(excludeOwn);
+    if(ownOnly && excludeOwn){
+      warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
+    }
     if (lat != null && !_.isFinite(lat)) {
       warnings.push('Ignoring lat (latitude) as it is not valid');
       lat = null;
@@ -87,6 +99,10 @@ export class EventController {
     if (ownOnly) {
       filteredEvents = filteredEvents.filter(event => event.user.id === user.id);
       onlyCreatedByMe = true;
+    }
+    if (excludeOwn) {
+      filteredEvents = filteredEvents.filter(event => event.user.id !== user.id);
+      excludingOwn = true;
     }
     if (fromDate && toDate) {
       filteredEvents = filteredEvents
@@ -138,6 +154,7 @@ export class EventController {
         filteredByDate,
         showingPast,
         onlyInMyInterests,
+        excludingOwn,
         latitude: lat,
         longitude: long,
         radius,
@@ -149,13 +166,6 @@ export class EventController {
       warnings,
       events: eventsPayload,
     };
-  }
-
-  @Get('own')
-  @UseGuards(AuthGuard())
-  async myEvents(@Req() request) {
-    if (request.user == null) throw new BadRequestException('You need to be logged in to view your events');
-    return { events: await this.eventService.eventsForUser(request.user) };
   }
 
   @Get('attending')
