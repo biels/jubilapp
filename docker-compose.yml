@@ -1,9 +1,9 @@
 version: '3'
 services:
   server:
-    build: ./packages/server
+    build: .
     ports:
-      - "3000:3000"
+      - "3000:4100"
     volumes:
       - .:/src
     environment:
