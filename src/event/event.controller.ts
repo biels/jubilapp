@@ -58,7 +58,7 @@ export class EventController {
     forMe = Boolean(forMe);
     ownOnly = Boolean(ownOnly);
     excludeOwn = Boolean(excludeOwn);
-    if(ownOnly && excludeOwn){
+    if (ownOnly && excludeOwn){
       warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
     }
     if (lat != null && !_.isFinite(lat)) {
@@ -97,11 +97,11 @@ export class EventController {
       }
     }
     if (ownOnly) {
-      filteredEvents = filteredEvents.filter(event => event.user.id === user.id);
+      filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
       onlyCreatedByMe = true;
     }
     if (excludeOwn) {
-      filteredEvents = filteredEvents.filter(event => event.user.id !== user.id);
+      filteredEvents = filteredEvents.filter(event => event.user && event.user.id !== user.id);
       excludingOwn = true;
     }
     if (fromDate && toDate) {

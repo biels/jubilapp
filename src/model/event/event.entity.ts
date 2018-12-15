@@ -23,7 +23,7 @@ export class Event {
   @Column({nullable: true})
   endDate: Date;
 
-  @ManyToOne(type => User, user => user.events)
+  @ManyToOne(type => User, user => user.events, {nullable: false})
   user: User;
 
   @Column({ nullable: true, type: 'decimal' })
