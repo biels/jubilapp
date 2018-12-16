@@ -155,6 +155,7 @@ export class EventController {
         showingPast,
         onlyInMyInterests,
         excludingOwn,
+        onlyCreatedByMe,
         latitude: lat,
         longitude: long,
         radius,

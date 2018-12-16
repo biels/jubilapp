@@ -50,6 +50,9 @@ export class User {
   @Column({nullable: true})
   country: string;
 
+  @Column({nullable: true})
+  pushToken: string;
+
 
 
 }
