@@ -224,13 +224,24 @@ export class EventController {
 
   @Post(':id/attendees')
   async setOneAttendees(@Req() request, @Param('id') id) {
+    // TODO Needs testing
     if (request.user == null) throw new BadRequestException('You need to be logged to set the list of attendees of an event');
     const event = await this.eventService.oneEvent(id);
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     const oldAttendees = await this.eventService.getEventAttendingList(event);
     const newAttendees = request.body.attendees;
     if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
-    this.eventService.setEventAttendingList(event, request.body)
+    await this.eventService.setEventAttendingList(event, request.body)
+  }
+
+  @Post(':id/rate')
+  async rateEvent(@Req() request, @Param('id') id) {
+    if (request.user == null) throw new BadRequestException('You need to be logged to rate an event');
+    const event = await this.eventService.oneEvent(id);
+    const rating = request.body.rating;
+    if(rating == null) throw new BadRequestException('You must provide a rating');
+    await this.eventService.rateEvent(request.user, event, rating)
+    return {}
   }
 
   @Post(':id/attend')
