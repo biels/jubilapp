@@ -7,7 +7,8 @@ import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
-import * as moment from 'moment'
+import * as moment from 'moment';
+import _ from 'lodash';
 
 @Injectable()
 export class EventService {
@@ -83,8 +84,8 @@ export class EventService {
     await this.eventAttendeeRepository.update({event: event}, {attending: false});
     for (const attendee of attendees) {
       let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee, event: event}});
-      if(eventAttendee == null) eventAttendee = {user: attendee, event: event, attending}
-      await this.eventAttendeeRepository.save(this.eventAttendeeRepository)
+      if(eventAttendee == null) eventAttendee = {user: attendee, event: event, attending};
+      await this.eventAttendeeRepository.save(this.eventAttendeeRepository);
     }
     return eventAttendeList;
   }
@@ -97,9 +98,12 @@ export class EventService {
     // User has attended the event
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
-    this.updateEventRating();
+    await this.updateEventRating(event);
   }
-  async updateEventRating(){
-
+  async updateEventRating(event: Event){
+    const eventAttendees = await this.eventAttendeeRepository.find({where: {event}});
+    let ratings = eventAttendees.filter(ea => ea.rating != null).map(ea => ea.rating);
+    event.rating = _.mean(ratings);
+    await this.eventRepository.save(event);
   }
 }
