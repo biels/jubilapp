@@ -39,20 +39,18 @@ export class EventController {
 
   @Get('stats')
   @UseGuards(AuthGuard())
-  async getstats (@Req() request){
-      const allEvents: Event[] = await this.eventService.allEvents();
-      const user: User = request.user;
-      let filteredEvents: Event[] = allEvents;
-      let filteredEventsOneType;
-      let stats: Array<string> = [];
-      filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
-      filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
-      for (let i = 0; i < 6; ++i) {
-              filteredEventsOneType = filteredEvents.filter(event => event.type == i);
-              stats.push(filteredEventsOneType.length);
-      }
-      return stats;
-
+  async getStats(@Req() request) {
+    const allEvents: Event[] = await this.eventService.allEvents();
+    const user: User = request.user;
+    let filteredEvents: Event[] = allEvents;
+    let stats = [];
+    filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
+    filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
+    for (let i = 0; i < 6; ++i) {
+      let filteredEventsOneType = filteredEvents.filter(event => event.type == i);
+      stats.push(filteredEventsOneType.length);
+    }
+    return stats;
   }
 
 
