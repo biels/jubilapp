@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventRepository } from '../model/event/event.repository';
 import { User } from '../model/user/user.entity';
@@ -7,6 +7,7 @@ import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
+import * as moment from 'moment'
 
 @Injectable()
 export class EventService {
@@ -86,5 +87,19 @@ export class EventService {
       await this.eventAttendeeRepository.save(this.eventAttendeeRepository)
     }
     return eventAttendeList;
+  }
+  async rateEvent(user: User, event: Event, rating: number){
+    let eventAttende = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
+    if(eventAttende == null || (eventAttende && !eventAttende.attending))
+      throw new BadRequestException('You have to have assisted to the event to be able to rate it');
+    if(moment(event.startDate).isAfter(new Date()))
+      throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
+    // User has attended the event
+    eventAttende.rating = rating;
+    await this.eventAttendeeRepository.save(eventAttende);
+    this.updateEventRating();
+  }
+  async updateEventRating(){
+
   }
 }
