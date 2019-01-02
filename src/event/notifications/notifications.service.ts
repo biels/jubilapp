@@ -17,32 +17,36 @@ export class NotificationsService {
     @InjectRepository(EventRepository)
     private readonly eventRepository: EventRepository,
     @InjectRepository(UserRepository)
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {
     this.expo = new Expo();
     this.scheduleNotifications();
     this.notifyAllTokens();
   }
-  expo: Expo
-  private scheduleNotifications(){
+
+  expo: Expo;
+
+  private scheduleNotifications() {
 
     schedule.scheduleJob('*/5 * * * *', fireDate => {
       this.notifyAllTokens();
     });
   }
-  private async notifyAllTokens(){
+
+  private async notifyAllTokens() {
     console.log(`Notifiying all tokens...`);
     const users = await this.userRepository.find();
     let messages = [];
+    //TODO Implement specific notifications
     users.filter(user => user.pushToken != null)
       .forEach(user => {
-      messages.push({
-        to: user.pushToken,
-        sound: 'default',
-        body: 'AAThis is a test notification',
-        data: {withSome: 'data'}
+        messages.push({
+          to: user.pushToken,
+          sound: 'default',
+          body: 'AAThis is a test notification',
+          data: { withSome: 'data' },
+        });
       });
-    });
     let chunks = this.expo.chunkPushNotifications(messages);
     let tickets = [];
     (async () => {

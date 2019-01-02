@@ -23,6 +23,7 @@ export class CalendarService {
   async generateCalendarForUser(user: User){
     const attendingList = await this.getUserAttendingList(user);
     const mapEventToICalEvent = (event: EventAttendee) => {};
+    // TODO Implement mapping
     // const events: ical.EventData[] = user.attendingEvents.map(mapEventToICalEvent)
     // const iCalCalendar = ical({
     //   name: 'Calendar for ' + user.name,
