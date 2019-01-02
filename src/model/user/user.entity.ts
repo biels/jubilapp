@@ -50,7 +50,7 @@ export class User {
   @Column({nullable: true})
   country: string;
 
-  @Column()
+  @Column({nullable: true})
   score: number;
 
   @Column({nullable: true})
