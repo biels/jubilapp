@@ -37,6 +37,25 @@ export class EventController {
     return { events: await this.eventService.eventsForUser(request.user) };
   }
 
+  @Get('stats')
+  @UseGuards(AuthGuard())
+  async getstats (@Req() request){
+      const allEvents: Event[] = await this.eventService.allEvents();
+      const user: User = request.user;
+      let filteredEvents: Event[] = allEvents;
+      let filteredEventsOneType;
+      let stats: Array<string> = [];
+      filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
+      filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
+      for (let i = 0; i < 6; ++i) {
+              filteredEventsOneType = filteredEvents.filter(event => event.type == i);
+              stats.push(filteredEventsOneType.length);
+      }
+      return stats;
+
+  }
+
+
   @Get()
   @UseGuards(AuthGuard())
   async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn) {
