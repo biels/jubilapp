@@ -46,10 +46,15 @@ export class EventService {
   }
 
   async registerAttendee(user: User, event: Event, attending: boolean) {
-    if(user == null || event == null) return null;
-    let existing: DeepPartial<EventAttendee> = await this.eventAttendeeRepository.findOne({ where: { event: {id: event.id}, user: {id: user.id} } });
+    if (user == null || event == null) return null;
+    let existing: DeepPartial<EventAttendee> = await this.eventAttendeeRepository.findOne({
+      where: {
+        event: { id: event.id },
+        user: { id: user.id },
+      },
+    });
     if (existing == null) {
-      existing = { user: {id: user.id}, event: {id: event.id}, attending: attending}
+      existing = { user: { id: user.id }, event: { id: event.id }, attending: attending };
     }
     existing.attending = attending;
     console.log(`Saving attendee: `, existing);
@@ -64,11 +69,22 @@ export class EventService {
 
   async getUserAttendingList(user: User) {
     const eventAttendeList = await this.eventAttendeeRepository.find({ where: { user: user }, relations: ['event'] });
-    return eventAttendeList
-  }
-  async getEventAttendingList(event: Event) {
-    const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user']});
-    return eventAttendeList
+    return eventAttendeList;
   }
 
+  async getEventAttendingList(event: Event) {
+    const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
+    return eventAttendeList;
+  }
+
+  async setEventAttendingList(event: Event, attendees: User[], attending: boolean = true) {
+    const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
+    await this.eventAttendeeRepository.update({event: event}, {attending: false});
+    for (const attendee of attendees) {
+      let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee, event: event}});
+      if(eventAttendee == null) eventAttendee = {user: attendee, event: event, attending}
+      await this.eventAttendeeRepository.save(this.eventAttendeeRepository)
+    }
+    return eventAttendeList;
+  }
 }

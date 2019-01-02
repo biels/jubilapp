@@ -58,7 +58,7 @@ export class EventController {
     forMe = Boolean(forMe);
     ownOnly = Boolean(ownOnly);
     excludeOwn = Boolean(excludeOwn);
-    if (ownOnly && excludeOwn){
+    if (ownOnly && excludeOwn) {
       warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
     }
     if (lat != null && !_.isFinite(lat)) {
@@ -220,6 +220,17 @@ export class EventController {
         no: attendees.filter(a => !a.attending).map(attendeeToUser),
       },
     };
+  }
+
+  @Post(':id/attendees')
+  async setOneAttendees(@Req() request, @Param('id') id) {
+    if (request.user == null) throw new BadRequestException('You need to be logged to set the list of attendees of an event');
+    const event = await this.eventService.oneEvent(id);
+    if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
+    const oldAttendees = await this.eventService.getEventAttendingList(event);
+    const newAttendees = request.body.attendees;
+    if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
+    this.eventService.setEventAttendingList(event, request.body)
   }
 
   @Post(':id/attend')
