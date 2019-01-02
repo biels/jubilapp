@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import schedule from 'node-schedule';
+import * as schedule from 'node-schedule';
 import { EventService } from '../event.service';
 import { EventRepository } from '../../model/event/event.repository';
 import { InjectRepository } from '@nestjs/typeorm';

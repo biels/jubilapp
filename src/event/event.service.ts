@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventRepository } from '../model/event/event.repository';
 import { User } from '../model/user/user.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
@@ -22,7 +22,7 @@ export class EventService {
   }
 
   async allEvents() {
-    return this.eventRepository.find();
+    return this.eventRepository.find({relations: ['user']});
   }
 
   async eventsForUser(user: User) {
