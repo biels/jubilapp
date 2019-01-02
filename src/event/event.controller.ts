@@ -39,20 +39,18 @@ export class EventController {
 
   @Get('stats')
   @UseGuards(AuthGuard())
-  async getstats (@Req() request){
-      const allEvents: Event[] = await this.eventService.allEvents();
-      const user: User = request.user;
-      let filteredEvents: Event[] = allEvents;
-      let filteredEventsOneType;
-      let stats: Array<string> = [];
-      filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
-      filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
-      for (let i = 0; i < 6; ++i) {
-              filteredEventsOneType = filteredEvents.filter(event => event.type == i);
-              stats.push(filteredEventsOneType.length);
-      }
-      return stats;
-
+  async getStats(@Req() request) {
+    const allEvents: Event[] = await this.eventService.allEvents();
+    const user: User = request.user;
+    let filteredEvents: Event[] = allEvents;
+    let stats = [];
+    filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
+    filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
+    for (let i = 0; i < 6; ++i) {
+      let filteredEventsOneType = filteredEvents.filter(event => event.type == i);
+      stats.push(filteredEventsOneType.length);
+    }
+    return stats;
   }
 
 
@@ -243,25 +241,13 @@ export class EventController {
 
   @Post(':id/attendees')
   async setOneAttendees(@Req() request, @Param('id') id) {
-    // TODO Needs testing
     if (request.user == null) throw new BadRequestException('You need to be logged to set the list of attendees of an event');
     const event = await this.eventService.oneEvent(id);
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     const oldAttendees = await this.eventService.getEventAttendingList(event);
     const newAttendees = request.body.attendees;
     if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
-    await this.eventService.setEventAttendingList(event, request.body)
-  }
-
-  @Post(':id/rate')
-  @UseGuards(AuthGuard())
-  async rateEvent(@Req() request, @Param('id') id) {
-    if (request.user == null) throw new BadRequestException('You need to be logged to rate an event');
-    const event = await this.eventService.oneEvent(id);
-    const rating = request.body.rating;
-    if(rating == null) throw new BadRequestException('You must provide a rating');
-    await this.eventService.rateEvent(request.user, event, rating)
-    return {}
+    this.eventService.setEventAttendingList(event, request.body)
   }
 
   @Post(':id/attend')
