@@ -38,7 +38,12 @@ export class Event {
   @Column({ nullable: true, default: 0, type: 'decimal'})
   price: number;
 
+  @Column({nullable: true})
+  rating: number;
+
   @OneToMany(type => EventAttendee, eventAttendee => eventAttendee.event)
   eventAttendees: EventAttendee[];
+
+
 
 }

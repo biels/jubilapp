@@ -15,4 +15,7 @@ export class EventAttendee {
 
   @Column()
   attending: boolean;
+
+  @Column({nullable: true})
+  rating: number;
 }
