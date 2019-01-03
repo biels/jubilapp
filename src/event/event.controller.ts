@@ -246,8 +246,8 @@ export class EventController {
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     const oldAttendees = await this.eventService.getEventAttendingList(event);
     const newAttendees = request.body.attendees;
-    if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
-    this.eventService.setEventAttendingList(event, request.body)
+    if (newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
+    this.eventService.setEventAttendingList(event, request.body);
   }
 
   @Post(':id/attend')
