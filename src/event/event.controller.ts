@@ -43,14 +43,18 @@ export class EventController {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let filteredEvents: Event[] = allEvents;
-    let stats = [];
+    var arr = [];
     filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
-    filteredEvents = filteredEvents.filter(event => moment(event.startDate).isAfter(new Date()));
+    filteredEvents = filteredEvents.filter(event => moment(event.endDate).isBefore(new Date()));
     for (let i = 0; i < 6; ++i) {
       let filteredEventsOneType = filteredEvents.filter(event => event.type == i);
-      stats.push(filteredEventsOneType.length);
+      arr.push({
+        type: EventCategory[i],
+        quantity: filteredEventsOneType.length,
+        MeanRating: "Not implemented yet"
+      });
     }
-    return stats;
+    return arr;
   }
 
 
@@ -257,6 +261,17 @@ export class EventController {
     const event = await this.eventService.oneEvent(id);
     await this.eventService.registerAttendee(request.user, event, true);
     return { attending: true };
+  }
+
+  @Post(':id/rate')
+  @UseGuards(AuthGuard())
+  async rateEvent(@Req() request, @Param('id') id) {
+    if (request.user == null) throw new BadRequestException('You need to be logged to rate an event');
+    const event = await this.eventService.oneEvent(id);
+    const rating = request.body.rating;
+    if(rating == null) throw new BadRequestException('You must provide a rating');
+    await this.eventService.rateEvent(request.user, event, rating)
+    return {}
   }
 
   @Delete(':id/attend')
