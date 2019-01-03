@@ -85,7 +85,7 @@ export class EventService {
     for (const attendee of attendees) {
       let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee, event: event}});
       if(eventAttendee == null) eventAttendee = {user: attendee, event: event, attending};
-      await this.eventAttendeeRepository.save(this.eventAttendeeRepository);
+      await this.eventAttendeeRepository.save(eventAttendee);
     }
     return eventAttendeList;
   }
