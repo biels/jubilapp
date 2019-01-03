@@ -235,6 +235,7 @@ export class EventController {
   }
 
   @Post(':id/rate')
+  @UseGuards(AuthGuard())
   async rateEvent(@Req() request, @Param('id') id) {
     if (request.user == null) throw new BadRequestException('You need to be logged to rate an event');
     const event = await this.eventService.oneEvent(id);
