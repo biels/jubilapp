@@ -8,7 +8,7 @@ import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
 import * as moment from 'moment';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class EventService {
@@ -90,7 +90,7 @@ export class EventService {
     return eventAttendeList;
   }
   async rateEvent(user: User, event: Event, rating: number){
-    let eventAttende = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
+    let eventAttende: EventAttendee = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
     if(eventAttende == null || (eventAttende && !eventAttende.attending))
       throw new BadRequestException('You have to have assisted to the event to be able to rate it');
     if(moment(event.startDate).isAfter(new Date()))
