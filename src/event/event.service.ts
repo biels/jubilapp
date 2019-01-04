@@ -79,18 +79,17 @@ export class EventService {
     return eventAttendeList;
   }
 
-  async setEventAttendingList(event: Event, attendees: EventAttendee[]) {
-    const oldAttendees = await this.getEventAttendingList(event);
+  async setEventAttendanceList(event: Event, attendees: EventAttendee[]) {
+    let oldAttendees = await this.getEventAttendingList(event);
+    oldAttendees = oldAttendees.filter(EventAttendee => EventAttendee.attending == true);
+    console.log(oldAttendees.length);
     const newAttendees = attendees.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
-    console.log(newAttendees);
-    if (oldAttendees.length > 0) event.attendance = ((oldAttendees.length - newAttendees.length)/oldAttendees.length)
-    console.log(event.attendance);
+    console.log(newAttendees.length);
+    if (oldAttendees.length > 0) event.attendance = (newAttendees.length/oldAttendees.length)
     await this.eventRepository.save(event);
 
     for (const attendee of attendees) {
-      console.log(attendee.user);
       let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee.user, event: event}});
-      console.log(eventAttendee);
       eventAttendee.attendanceConfirmed = attendee.attendanceConfirmed;
       await this.eventAttendeeRepository.save(eventAttendee);
     }

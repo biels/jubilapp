@@ -276,7 +276,7 @@ export class EventController {
     const newAttendees = request.body;
     if (event.attendance != null)  throw new BadRequestException('You have already check the attendance of this event');
     if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
-    await this.eventService.setEventAttendingList(event, request.body)
+    await this.eventService.setEventAttendanceList(event, request.body)
   }
 
   @Post(':id/rate')
