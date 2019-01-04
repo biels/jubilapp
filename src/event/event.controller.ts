@@ -19,6 +19,7 @@ import * as _ from 'lodash';
 import { Event } from '../model/event/event.entity';
 import { User } from 'model/user/user.entity';
 import { EventCategory } from '../model/event/event-category.enum';
+import math = require("mathjs");
 
 @Controller('event')
 export class EventController {
@@ -36,6 +37,31 @@ export class EventController {
     if (request.user == null) throw new BadRequestException('You need to be logged in to view your events');
     return { events: await this.eventService.eventsForUser(request.user) };
   }
+
+  @Get('stats')
+  @UseGuards(AuthGuard())
+  async getStats(@Req() request) {
+    const allEvents: Event[] = await this.eventService.allEvents();
+    const user: User = request.user;
+    let filteredEvents: Event[] = allEvents;
+    var arr = [];
+    filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
+    filteredEvents = filteredEvents.filter(event => moment(event.endDate).isBefore(new Date()));
+    for (let i = 0; i < 6; ++i) {
+      let filteredEventsOneType = filteredEvents.filter(event => event.type == i);
+      let ratings = filteredEventsOneType.filter(event => event.rating != null).map(event => event.rating);
+      console.log(ratings);
+      var rating = 0;
+      if (ratings.length > 0) rating = math.mean(ratings);
+      arr.push({
+        type: EventCategory[i],
+        quantity: filteredEventsOneType.length,
+        MeanRating: rating
+      });
+    }
+    return arr;
+  }
+
 
   @Get()
   @UseGuards(AuthGuard())
