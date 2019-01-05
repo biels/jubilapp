@@ -4,11 +4,13 @@ import { User } from '../model/user/user.entity';
 import { ProfileService } from './profile.service';
 import { UserRepository } from '../model/user/user.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CalendarService } from './calendar.service';
 
 @Controller('profile')
 export class ProfileController {
   constructor(
     private readonly profileService: ProfileService,
+    private readonly calendarService: CalendarService,
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
   ) {
@@ -21,6 +23,13 @@ export class ProfileController {
     const { password, interests, ...rest }: Partial<User> = request.user;
     const transformedInterests = this.profileService.decodeInterests(interests);
     return { ...rest, interests: transformedInterests };
+  }
+
+  @Get('calendar')
+  @UseGuards(AuthGuard())
+  async calendar(@Req() request) {
+    if (request.user == null) throw new BadRequestException('You need to be logged in to view your calendar');
+    return this.calendarService.generateCalendarForUser(request.user);
   }
 
   @Patch()
