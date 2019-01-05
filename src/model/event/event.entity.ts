@@ -17,7 +17,7 @@ export class Event {
   @Column({ default: 0})
   type: EventCategory;
 
-  @Column({nullable: false, default: new Date()})
+  @Column({nullable: true})
   startDate: Date;
 
   @Column({nullable: true})

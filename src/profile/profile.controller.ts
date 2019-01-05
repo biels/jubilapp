@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../model/user/user.entity';
 import { ProfileService } from './profile.service';
@@ -26,10 +26,11 @@ export class ProfileController {
   }
 
   @Get('calendar')
-  @UseGuards(AuthGuard())
-  async calendar(@Req() request) {
-    if (request.user == null) throw new BadRequestException('You need to be logged in to view your calendar');
-    return this.calendarService.generateCalendarForUser(request.user);
+  async calendar(@Req() request, @Query('email') email) {
+    if (email == null) throw new BadRequestException('You need to provide your email to view your calendar');
+    const user = await this.userRepository.findOneByEmail(email)
+    if (user == null) throw new BadRequestException('You need to provide a valid email to view your calendar');
+    return this.calendarService.generateCalendarForUser(user);
   }
 
   @Patch()

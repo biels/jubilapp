@@ -30,8 +30,9 @@ export class CalendarService {
   async generateCalendarForUser(user: User): Promise<string> {
     const attendingList: EventAttendee[] = await this.getUserAttendingList(user);
     const mapEventToICalEvent = (e: Event): ical.EventData => {
+      // console.log(`Event details: `, e);
       return {
-        start: moment(e.startDate),
+        start: moment(e.startDate || new Date()),
         end: moment(e.endDate || new Date()).add(1, 'hour'),
         summary: e.name,
         description: e.description,
@@ -40,7 +41,7 @@ export class CalendarService {
       };
     };
     // TODO Implement mapping
-    const calendarEvents: ical.EventData[] = user.attendingEvents
+    const calendarEvents: ical.EventData[] = attendingList
       .filter(ea => ea.attending)
       .map(ea => ea.event)
       .map(mapEventToICalEvent);
