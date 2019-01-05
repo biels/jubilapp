@@ -119,9 +119,8 @@ export class EventController {
       showingPast = true;
     }
     if (AttendanceUnchecked){
-      filteredEvents = filteredEvents.filter(event => event.attendance != null);
-      filteredEvents = filteredEvents
-          .filter(event => moment(event.endDate).isBefore(new Date()));
+      filteredEvents = filteredEvents.filter(event => event.attendance == null);
+      filteredEvents = filteredEvents.filter(event => moment(event.endDate).isBefore(new Date()));
       filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
       onlyAttendanceUnchecked = true;
     }
