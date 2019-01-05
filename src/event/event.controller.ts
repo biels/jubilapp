@@ -97,7 +97,7 @@ export class EventController {
     excludeOwn = Boolean(excludeOwn);
     attendanceUnchecked = Boolean(attendanceUnchecked);
     ratingPending= Boolean(ratingPending);
-
+    if (attendanceUnchecked || ratingPending) past = true;
     if (ratingPending){
         let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user)
         filteredEvents = EventAttendeeConfirmed.map(ea => ea.event)
