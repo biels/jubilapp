@@ -19,7 +19,7 @@ import * as _ from 'lodash';
 import { Event } from '../model/event/event.entity';
 import { User } from 'model/user/user.entity';
 import { EventCategory } from '../model/event/event-category.enum';
-import math = require("mathjs");
+import * as math from "mathjs";
 import {EventAttendee} from "../model/event-attendee/event-attendee.entity";
 
 @Controller('event')
@@ -58,7 +58,7 @@ export class EventController {
       let attendances = filteredEventsOneType.filter(event => event.attendance != null).map(event => event.attendance);
       console.log(attendances);
       let attendance = 0;
-      if (ratings.length > 0) attendance = math.mean(attendances);
+      if (attendances.length > 0) attendance = math.mean(attendances);
 
       arr.push({
         type: EventCategory[i],
