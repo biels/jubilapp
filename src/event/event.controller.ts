@@ -99,8 +99,9 @@ export class EventController {
     ratingPending= Boolean(ratingPending);
 
     if (ratingPending){
-      //callEventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user);
-      onlyRatingPending = true;
+        let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user)
+        filteredEvents = EventAttendeeConfirmed.map(ea => ea.event)
+        onlyRatingPending = true;
     }
 
     if (ownOnly && excludeOwn) {
