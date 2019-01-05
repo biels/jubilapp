@@ -200,6 +200,8 @@ export class EventController {
       showing = filteredEvents.length;
       total = allEvents.length;
     }
+    let sortBy = require('sort-by');
+    filteredEvents.sort(sortBy('startDate'));
     const eventsPayload = filteredEvents.map(this.transformEventType);
     return {
       filter: {
