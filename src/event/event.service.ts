@@ -78,21 +78,29 @@ export class EventService {
     const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
     return eventAttendeList;
   }
+  async getEventAttendingListwithRatingPending(user: User) {
+    let eventAttendeeList = await this.eventAttendeeRepository.find({ where: { user: user }, relations: ['event'] });
+    eventAttendeeList = eventAttendeeList.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
+    eventAttendeeList = eventAttendeeList.filter(EventAttendee => EventAttendee.rating == null);
+    return eventAttendeeList;
+  }
 
   async setEventAttendanceList(event: Event, attendees: EventAttendee[]) {
     let oldAttendees = await this.getEventAttendingList(event);
     oldAttendees = oldAttendees.filter(EventAttendee => EventAttendee.attending == true);
-    console.log(oldAttendees.length);
     const newAttendees = attendees.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
-    console.log(newAttendees.length);
     if (oldAttendees.length > 0) event.attendance = (newAttendees.length/oldAttendees.length)
+    else event.attendance = 0;
     await this.eventRepository.save(event);
 
-    for (const attendee of attendees) {
-      let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee.user, event: event}});
-      eventAttendee.attendanceConfirmed = attendee.attendanceConfirmed;
-      await this.eventAttendeeRepository.save(eventAttendee);
+    if (newAttendees.length != 0){
+      for (const attendee of attendees) {
+        let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee.user, event: event}});
+        eventAttendee.attendanceConfirmed = attendee.attendanceConfirmed;
+        await this.eventAttendeeRepository.save(eventAttendee);
+      }
     }
+
   }
   async rateEvent(user: User, event: Event, rating: number){
     let eventAttende: EventAttendee = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });

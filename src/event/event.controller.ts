@@ -20,6 +20,7 @@ import { Event } from '../model/event/event.entity';
 import { User } from 'model/user/user.entity';
 import { EventCategory } from '../model/event/event-category.enum';
 import math = require("mathjs");
+import {EventAttendee} from "../model/event-attendee/event-attendee.entity";
 
 @Controller('event')
 export class EventController {
@@ -72,7 +73,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('AttendanceUnchecked') AttendanceUnchecked) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -85,13 +86,23 @@ export class EventController {
     let onlyInMyInterests;
     let onlyCreatedByMe;
     let onlyAttendanceUnchecked;
+    let onlyRatingPending;
     let excludingOwn;
+
     if (lat != null) lat = Number(lat);
     if (long != null) long = Number(long);
     past = Boolean(past);
     forMe = Boolean(forMe);
     ownOnly = Boolean(ownOnly);
     excludeOwn = Boolean(excludeOwn);
+    attendanceUnchecked = Boolean(attendanceUnchecked);
+    ratingPending= Boolean(ratingPending);
+
+    if (ratingPending){
+      //callEventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user);
+      onlyRatingPending = true;
+    }
+
     if (ownOnly && excludeOwn) {
       warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
     }
@@ -118,11 +129,12 @@ export class EventController {
     } else {
       showingPast = true;
     }
-    if (AttendanceUnchecked){
+    if (attendanceUnchecked){
       filteredEvents = filteredEvents.filter(event => event.attendance == null);
       filteredEvents = filteredEvents.filter(event => moment(event.endDate).isBefore(new Date()));
       filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
       onlyAttendanceUnchecked = true;
+
     }
     if (forMe) {
       if (user.interests == null) warnings.push('The user does not have interests in the profile');
@@ -188,7 +200,6 @@ export class EventController {
       total = allEvents.length;
     }
     const eventsPayload = filteredEvents.map(this.transformEventType);
-    console.log(eventsPayload); //NOT WORKING
     return {
       filter: {
         filteredByLocation,
@@ -198,6 +209,7 @@ export class EventController {
         onlyAttendanceUnchecked,
         excludingOwn,
         onlyCreatedByMe,
+        onlyRatingPending,
         latitude: lat,
         longitude: long,
         radius,
