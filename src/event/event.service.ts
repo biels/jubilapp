@@ -8,7 +8,7 @@ import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
 import * as moment from 'moment';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class EventService {
@@ -78,23 +78,40 @@ export class EventService {
     const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
     return eventAttendeList;
   }
+  async getEventAttendingListwithRatingPending(user: User) {
+    let eventAttendeeList = await this.eventAttendeeRepository.find({ where: { user: user }, relations: ['event'] });
+    eventAttendeeList = eventAttendeeList.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
+    eventAttendeeList = eventAttendeeList.filter(EventAttendee => EventAttendee.rating == null);
+    return eventAttendeeList;
+  }
 
-  async setEventAttendingList(event: Event, attendees: User[], attending: boolean = true) {
-    const eventAttendeList = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
-    await this.eventAttendeeRepository.update({event: event}, {attending: false});
-    for (const attendee of attendees) {
-      let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee, event: event}});
-      if(eventAttendee == null) eventAttendee = {user: attendee, event: event, attending};
-      await this.eventAttendeeRepository.save(eventAttendee);
+  async setEventAttendanceList(event: Event, attendees: EventAttendee[]) {
+    let oldAttendees = await this.getEventAttendingList(event);
+    oldAttendees = oldAttendees.filter(EventAttendee => EventAttendee.attending == true);
+    const newAttendees = attendees.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
+    if (oldAttendees.length > 0) event.attendance = (newAttendees.length/oldAttendees.length)
+    else event.attendance = 0;
+    await this.eventRepository.save(event);
+
+    if (newAttendees.length != 0){
+      for (const attendee of attendees) {
+        let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee.user, event: event}});
+        eventAttendee.attendanceConfirmed = attendee.attendanceConfirmed;
+        await this.eventAttendeeRepository.save(eventAttendee);
+      }
     }
-    return eventAttendeList;
+
   }
   async rateEvent(user: User, event: Event, rating: number){
-    let eventAttende = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
+    let eventAttende: EventAttendee = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
     if(eventAttende == null || (eventAttende && !eventAttende.attending))
       throw new BadRequestException('You have to have assisted to the event to be able to rate it');
+    if (eventAttende.rating != null)
+      throw new BadRequestException('You have already rated it');
     if(moment(event.startDate).isAfter(new Date()))
       throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
+    if(eventAttende && !eventAttende.attendanceConfirmed)
+      throw new BadRequestException('You have to have not assisted to the event or your assistance has not been confirmed yet');
     // User has attended the event
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
