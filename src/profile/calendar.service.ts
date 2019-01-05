@@ -34,7 +34,7 @@ export class CalendarService {
       // console.log(`Event details: `, e);
       return {
         start: e.startDate,
-        end: e.endDate || moment(e.startDate).add(1, 'hour'),
+        end: e.endDate || moment(e.startDate).add(3, 'hour'),
         summary: e.name || e.description,
         description: e.description,
         organizer: `${e.user.name || ''} ${e.user.surname || ''} <${e.user.email}>`,
