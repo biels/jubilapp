@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { UserRepository } from '../../model/user/user.repository';
 import Expo from 'expo-server-sdk';
+import {User} from "../../model/user/user.entity";
 
 // Create a new Expo SDK client
 
@@ -25,6 +26,7 @@ export class NotificationsService {
   }
 
   expo: Expo;
+  private messages: any = [];
 
   private scheduleNotifications() {
 
@@ -33,21 +35,21 @@ export class NotificationsService {
     });
   }
 
+  async addNotification (users: User[], body: string) {
+    users.filter(user => user.pushToken != null)
+        .forEach(user => {
+          this.messages.push({
+            to: user.pushToken,
+            sound: 'default',
+            body: body,
+            data: { withSome: 'data' },
+          });
+        });
+  }
+
   private async notifyAllTokens() {
     console.log(`Notifiying all tokens...`);
-    const users = await this.userRepository.find();
-    let messages = [];
-    //TODO Implement specific notifications
-    users.filter(user => user.pushToken != null)
-      .forEach(user => {
-        messages.push({
-          to: user.pushToken,
-          sound: 'default',
-          body: 'AAThis is a test notification',
-          data: { withSome: 'data' },
-        });
-      });
-    let chunks = this.expo.chunkPushNotifications(messages);
+    let chunks = this.expo.chunkPushNotifications(this.messages);
     let tickets = [];
     (async () => {
       // Send the chunks to the Expo push notification service. There are
@@ -68,5 +70,6 @@ export class NotificationsService {
       }
     })();
     console.log(`Tickets:`, tickets);
+    this.messages = [];
   }
 }

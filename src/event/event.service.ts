@@ -7,6 +7,9 @@ import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
+import {NotificationsService} from "./notifications/notifications.service";
+
+
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
@@ -14,6 +17,7 @@ import * as _ from 'lodash';
 export class EventService {
 
   constructor(
+      private readonly notificationsService: NotificationsService,
       @InjectRepository(EventRepository)
       private readonly eventRepository: EventRepository,
       @InjectRepository(EventAttendee)
@@ -44,6 +48,18 @@ export class EventService {
   }
 
   async deleteOwnEvent(user, id) {
+    let event = await this.oneEvent(id);
+    if (event == null) throw new BadRequestException('This event does not exist');
+    //console.log(event.user);
+    //if (event.user != user) throw new BadRequestException('You can not delete an event you are not the owner'); //FIX
+
+    let AttendingListDeletedEvent = await this.getEventAttendingList(event);
+    let UserToBeNotified: User []= AttendingListDeletedEvent.map(ea => ea.user);
+    console.log(UserToBeNotified);
+    let body: string = 'The event with name '+ event.name + ' has been deleted';
+    console.log(body);
+    this.notificationsService.addNotification(UserToBeNotified, body);
+    AttendingListDeletedEvent.forEach(ea =>  this.eventAttendeeRepository.delete({ id: ea.id }))
     return await this.eventRepository.delete({ id });
   }
 
