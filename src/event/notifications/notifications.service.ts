@@ -14,7 +14,6 @@ import {User} from "../../model/user/user.entity";
 export class NotificationsService {
 
   constructor(
-    private readonly eventService: EventService,
     @InjectRepository(EventRepository)
     private readonly eventRepository: EventRepository,
     @InjectRepository(UserRepository)
