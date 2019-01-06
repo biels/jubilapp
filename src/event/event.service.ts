@@ -14,10 +14,10 @@ import * as _ from 'lodash';
 export class EventService {
 
   constructor(
-    @InjectRepository(EventRepository)
-    private readonly eventRepository: EventRepository,
-    @InjectRepository(EventAttendee)
-    private readonly eventAttendeeRepository: Repository<EventAttendee>,
+      @InjectRepository(EventRepository)
+      private readonly eventRepository: EventRepository,
+      @InjectRepository(EventAttendee)
+      private readonly eventAttendeeRepository: Repository<EventAttendee>,
   ) {
   }
 

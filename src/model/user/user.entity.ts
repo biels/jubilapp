@@ -51,7 +51,7 @@ export class User {
   country: string;
 
   @Column({nullable: true})
-  score: number;
+  tokens: number;
 
   @Column({nullable: true})
   pushToken: string;

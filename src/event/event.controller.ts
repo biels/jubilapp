@@ -51,12 +51,10 @@ export class EventController {
     for (let i = 0; i < 6; ++i) {
       let filteredEventsOneType = filteredEvents.filter(event => event.type == i);
       let ratings = filteredEventsOneType.filter(event => event.rating != null).map(event => event.rating);
-      console.log(ratings);
       let rating = 0;
       if (ratings.length > 0) rating = math.mean(ratings);
 
       let attendances = filteredEventsOneType.filter(event => event.attendance != null).map(event => event.attendance);
-      console.log(attendances);
       let attendance = 0;
       if (attendances.length > 0) attendance = math.mean(attendances);
 
@@ -200,8 +198,7 @@ export class EventController {
       showing = filteredEvents.length;
       total = allEvents.length;
     }
-    let sortBy = require('sort-by');
-    filteredEvents.sort(sortBy('startDate'));
+    filteredEvents = _.sortBy(filteredEvents, e => e.startDate)
     const eventsPayload = filteredEvents.map(this.transformEventType);
     return {
       filter: {
