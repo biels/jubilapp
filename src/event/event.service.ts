@@ -116,7 +116,7 @@ export class EventService {
     await this.eventRepository.save(event);
 
     //Notifications
-    let UserToBeNotified: User []= newAttendees.map(ea => ea.user);
+    let UserToBeNotified: User []= newAttendees.map(ea => ea.user); //FIXME
     console.log(UserToBeNotified);
     let body: string = '¡La actividad  '+ event.name + ' ya la puede valorar!';
     console.log(body);
@@ -141,7 +141,6 @@ export class EventService {
       throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
     if(eventAttende && !eventAttende.attendanceConfirmed)
       throw new BadRequestException('You have to have not assisted to the event or your assistance has not been confirmed yet');
-    // User has attended the event
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
     await this.updateEventRating(event);
