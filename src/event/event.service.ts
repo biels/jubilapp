@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventRepository } from '../model/event/event.repository';
 import { User } from '../model/user/user.entity';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
@@ -27,7 +27,7 @@ export class EventService {
   }
 
   async allEvents() {
-    return this.eventRepository.find({relations: ['user']});
+    return this.eventRepository.find({ relations: ['user'] });
   }
 
   async eventsForUser(user: User) {
@@ -47,8 +47,6 @@ export class EventService {
     if (body.type) partialEntity.type = EventCategory[body.type];
     return await this.eventRepository.update({ id }, partialEntity as any);
   }
-
-
 
   async deleteOwnEvent(user, id) {
     const allEvents: Event[] = await this.allEvents();
@@ -108,10 +106,13 @@ export class EventService {
   }
 
   async setEventAttendanceList(event: Event, attendees: EventAttendee[]) {
+    console.log(`Attendees`, attendees);
+    if (event == null) throw new BadRequestException('Event not found');
+    if (!_.isArray(attendees)) throw new BadRequestException('Attendee list not found');
     let oldAttendees = await this.getEventAttendingList(event);
     oldAttendees = oldAttendees.filter(EventAttendee => EventAttendee.attending == true);
     const newAttendees = attendees.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
-    if (oldAttendees.length > 0) event.attendance = (newAttendees.length/oldAttendees.length)
+    if (oldAttendees.length > 0) event.attendance = (newAttendees.length / oldAttendees.length);
     else event.attendance = 0;
     await this.eventRepository.save(event);
 
@@ -124,31 +125,45 @@ export class EventService {
 
     if (newAttendees.length != 0){
       for (const attendee of attendees) {
-        let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({where: {user: attendee.user, event: event}});
+        let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({
+          where: {
+            user: attendee.user,
+            event: event,
+          },
+        });
         eventAttendee.attendanceConfirmed = attendee.attendanceConfirmed;
         await this.eventAttendeeRepository.save(eventAttendee);
       }
     }
 
   }
-  async rateEvent(user: User, event: Event, rating: number){
-    let eventAttende: EventAttendee = await this.eventAttendeeRepository.findOne({ where: { event, user }, relations: ['user'] });
-    if(eventAttende == null || (eventAttende && !eventAttende.attending))
+
+  async rateEvent(user: User, event: Event, rating: number) {
+    let eventAttende: EventAttendee = await this.eventAttendeeRepository.findOne({
+      where: { event, user },
+      relations: ['user'],
+    });
+    if (eventAttende == null || (eventAttende && !eventAttende.attending))
       throw new BadRequestException('You have to have assisted to the event to be able to rate it');
     if (eventAttende.rating != null)
       throw new BadRequestException('You have already rated it');
-    if(moment(event.startDate).isAfter(new Date()))
+    if (moment(event.startDate).isAfter(new Date()))
       throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
-    if(eventAttende && !eventAttende.attendanceConfirmed)
+    if (eventAttende && !eventAttende.attendanceConfirmed)
       throw new BadRequestException('You have to have not assisted to the event or your assistance has not been confirmed yet');
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
     await this.updateEventRating(event);
   }
-  async updateEventRating(event: Event){
-    const eventAttendees = await this.eventAttendeeRepository.find({where: {event}});
+
+  async updateEventRating(event: Event) {
+    const eventAttendees = await this.eventAttendeeRepository.find({ where: { event } });
     let ratings = eventAttendees.filter(ea => ea.rating != null).map(ea => ea.rating);
     event.rating = _.mean(ratings);
     await this.eventRepository.save(event);
+  }
+  async isUndecided(event: Event, user: User){
+    const eventAttendee = await this.eventAttendeeRepository.findOne({event, user});
+    return eventAttendee == null;
   }
 }
