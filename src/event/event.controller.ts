@@ -103,7 +103,7 @@ export class EventController {
       filteredEvents = EventAttendeeConfirmed.map(ea => ea.event);
       onlyRatingPending = true;
     }
-    if (onlyRated) {
+    if (ratedOnly) {
       filteredEvents = filteredEvents.filter(event => event.rating != null);
       ratedOnly = true;
     }
@@ -134,7 +134,7 @@ export class EventController {
       showingPast = true;
     }
     if (undecidedOnly) {
-      filteredEvents.filter(this.eventService.isUndecided);
+      filteredEvents.filter(event => this.eventService.isUndecided(event, user));
       onlyUndecided = true;
     }
     if (attendanceUnchecked) {
