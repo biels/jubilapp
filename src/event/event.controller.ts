@@ -71,7 +71,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -83,6 +83,7 @@ export class EventController {
     let radius;
     let onlyInMyInterests;
     let onlyCreatedByMe;
+    let onlyUndecided;
     let onlyAttendanceUnchecked;
     let onlyRatingPending;
     let excludingOwn;
@@ -94,7 +95,7 @@ export class EventController {
     ownOnly = Boolean(ownOnly);
     excludeOwn = Boolean(excludeOwn);
     attendanceUnchecked = Boolean(attendanceUnchecked);
-    ratingPending= Boolean(ratingPending);
+    ratingPending = Boolean(ratingPending);
     if (attendanceUnchecked || ratingPending) past = true;
     if (ratingPending){
         let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user)
@@ -127,6 +128,10 @@ export class EventController {
       totalAfterPast = filteredEvents.length;
     } else {
       showingPast = true;
+    }
+    if(undecidedOnly){
+      filteredEvents.filter(this.eventService.isUndecided)
+      onlyUndecided = true;
     }
     if (attendanceUnchecked){
       filteredEvents = filteredEvents.filter(event => event.attendance == null);
@@ -210,6 +215,7 @@ export class EventController {
         excludingOwn,
         onlyCreatedByMe,
         onlyRatingPending,
+        onlyUndecided,
         latitude: lat,
         longitude: long,
         radius,
