@@ -75,7 +75,7 @@ export class NotificationsService {
       let userToBeNotified: User[] = eventAttendees.map(ea => ea.user);
       let body: string = '¡La actividad  ' + upcomingEvent.name + ' empieza pronto!';
       console.log('TBN', userToBeNotified, body);
-      this.addNotification(userToBeNotified, body);
+      await this.addNotification(userToBeNotified, body);
     }
   }
 
