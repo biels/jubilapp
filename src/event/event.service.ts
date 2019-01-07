@@ -51,11 +51,14 @@ export class EventService {
 
 
   async deleteOwnEvent(user, id) {
+    const allEvents: Event[] = await this.allEvents();
+    let filteredEvents: Event[] = allEvents;
+    let eventofuser = filteredEvents.filter(event => event.id == id);
+    let userevent = eventofuser.map(ea => ea.user).pop();
     let event = await this.oneEvent(id);
-    if (event == null) throw new BadRequestException('This event does not exist');
-    //console.log(event.user);
-    //if (event.user != user) throw new BadRequestException('You can not delete an event you are not the owner'); //FIX
-
+    console.log (userevent);
+    console.log (event);
+    if (userevent.id != user.id) throw new BadRequestException('You can not delete an event you are not the owner'); //FIX
     let AttendingListDeletedEvent = await this.getEventAttendingList(event);
     let UserToBeNotified: User []= AttendingListDeletedEvent.map(ea => ea.user);
     console.log(UserToBeNotified);
