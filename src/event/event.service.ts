@@ -141,4 +141,9 @@ export class EventService {
     const eventAttendee = await this.eventAttendeeRepository.findOne({event, user});
     return eventAttendee == null;
   }
+  async isMaxCapacity(event: Event){
+    let isMaxCapacity = await this.eventAttendeeRepository.count({ where: { event }, relations: ['user'] });
+    console.log(isMaxCapacity)
+    return event.capacity > isMaxCapacity ;
+  }
 }

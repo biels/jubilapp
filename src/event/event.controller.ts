@@ -71,7 +71,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly, @Query('ratedOnly') ratedOnly) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly, @Query('ratedOnly') ratedOnly, @Query('CapacityExceeded') CapacityExceeded) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -88,6 +88,7 @@ export class EventController {
     let onlyRatingPending;
     let onlyRated;
     let excludingOwn;
+    let onlyCapacityExceeded;
 
     if (lat != null) lat = Number(lat);
     if (long != null) long = Number(long);
@@ -98,6 +99,12 @@ export class EventController {
     attendanceUnchecked = (attendanceUnchecked === 'true');
     ratingPending = (ratingPending === 'true');
     if (attendanceUnchecked || ratingPending) past = true;
+    if (CapacityExceeded) {
+      const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isMaxCapacity(event)));
+      filteredEvents = filteredEvents.filter((value, index) => checklist[index])
+      onlyCapacityExceeded = true;
+    }
+
     if (ratingPending) {
       let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user);
       filteredEvents = EventAttendeeConfirmed.map(ea => ea.event);
@@ -105,7 +112,7 @@ export class EventController {
     }
     if (ratedOnly) {
       filteredEvents = filteredEvents.filter(event => event.rating != null);
-      ratedOnly = true;
+      onlyRated = true;
     }
     if (ownOnly && excludeOwn) {
       warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
@@ -228,6 +235,7 @@ export class EventController {
         onlyRatingPending,
         onlyUndecided,
         onlyRated,
+        onlyCapacityExceeded,
         latitude: lat,
         longitude: long,
         radius,
