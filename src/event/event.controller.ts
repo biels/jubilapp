@@ -103,7 +103,7 @@ export class EventController {
       filteredEvents = EventAttendeeConfirmed.map(ea => ea.event);
       onlyRatingPending = true;
     }
-    if (onlyRated) {
+    if (ratedOnly) {
       filteredEvents = filteredEvents.filter(event => event.rating != null);
       ratedOnly = true;
     }
@@ -134,7 +134,14 @@ export class EventController {
       showingPast = true;
     }
     if (undecidedOnly) {
-      filteredEvents.filter(this.eventService.isUndecided);
+      const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isUndecided(event, user)));
+      filteredEvents = filteredEvents.filter((value, index) => checklist[index])
+      // filteredEvents = filteredEvents.filter(event => {
+      //
+      //   // const b = await this.eventService.isUndecided(event, user);
+      //   // console.log(`b`, b);
+      // });
+
       onlyUndecided = true;
     }
     if (attendanceUnchecked) {

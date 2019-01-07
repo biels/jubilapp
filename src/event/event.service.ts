@@ -137,8 +137,8 @@ export class EventService {
     event.rating = _.mean(ratings);
     await this.eventRepository.save(event);
   }
-  async isUndecided(event: Event){
-    const eventAttendees = await this.eventAttendeeRepository.find({event});
-    return eventAttendees.length === 0;
+  async isUndecided(event: Event, user: User){
+    const eventAttendee = await this.eventAttendeeRepository.findOne({event, user});
+    return eventAttendee == null;
   }
 }
