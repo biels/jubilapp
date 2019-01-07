@@ -6,10 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { UserRepository } from '../../model/user/user.repository';
 import Expo from 'expo-server-sdk';
-import {User} from "../../model/user/user.entity";
-import {EventAttendee} from "../../model/event-attendee/event-attendee.entity";
-import {Event} from "../../model/event/event.entity";
-import {Repository} from "typeorm";
+import { User } from '../../model/user/user.entity';
+import { EventAttendee } from '../../model/event-attendee/event-attendee.entity';
+import { Event } from '../../model/event/event.entity';
+import { Repository } from 'typeorm';
 
 // Create a new Expo SDK client
 
@@ -35,47 +35,47 @@ export class NotificationsService {
   private scheduleNotifications() {
 
     schedule.scheduleJob('*/5 * * * *', fireDate => {
-      this.notifynextevents();
+      this.notifyNextEvents();
       this.notifyAllTokens();
     });
   }
 
 
-  async addNotification (users: User[], body: string) {
+  async addNotification(users: User[], body: string) {
     users.filter(user => user.pushToken != null)
-        .forEach(user => {
-          this.messages.push({
-            to: user.pushToken,
-            sound: 'default',
-            body: body,
-            data: { withSome: 'data' },
-          });
+      .forEach(user => {
+        this.messages.push({
+          to: user.pushToken,
+          sound: 'default',
+          body: body,
+          data: { withSome: 'data' },
         });
+      });
   }
 
-  async notifynextevents() {
-    let datenow = new Date();
+  async notifyNextEvents() {
+    let currentDate = new Date();
 
-    var datenotification = new Date(datenow);
+    let notificationDate = new Date(currentDate);
 
-    var durationInMinutes = 5;
+    let durationInMinutes = 5;
 
-    datenotification.setMinutes(datenow.getMinutes() + durationInMinutes);
-    console.log(datenow);
-    console.log(datenotification);
+    notificationDate.setMinutes(currentDate.getMinutes() + durationInMinutes);
 
-    let EventSoon = await this.eventRepository.find({relations: ['user']});
-    EventSoon = EventSoon.filter(event => event.startDate >= datenow && event.startDate <= datenotification);
-    console.log(EventSoon);
-    for (const event of EventSoon) {
-      let Attendees = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
-      Attendees = Attendees.filter(EventAttendee => EventAttendee.attending == true);
+    let upcomingEvents: Event[] = await this.eventRepository.find({ relations: ['user'] });
+    upcomingEvents = upcomingEvents.filter(event => event.startDate >= currentDate && event.startDate <= notificationDate);
+    console.log(upcomingEvents);
+    for (const upcomingEvent of upcomingEvents) {
+      let eventAttendees = await this.eventAttendeeRepository.find({
+        where: { event: upcomingEvent },
+        relations: ['user'],
+      });
+      eventAttendees = eventAttendees.filter(eventAttendee => eventAttendee.attending == true);
       //Notifications
-      let UserToBeNotified: User [] = Attendees.map(ea => ea.user);
-      console.log(UserToBeNotified);
-      let body: string = '¡La actividad  ' + event.name + ' empieza pronto!';
-      console.log(body);
-      this.addNotification(UserToBeNotified, body);
+      let userToBeNotified: User[] = eventAttendees.map(ea => ea.user);
+      let body: string = '¡La actividad  ' + upcomingEvent.name + ' empieza pronto!';
+      console.log('TBN', userToBeNotified, body);
+      this.addNotification(userToBeNotified, body);
     }
   }
 
