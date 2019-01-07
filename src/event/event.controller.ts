@@ -19,8 +19,8 @@ import * as _ from 'lodash';
 import { Event } from '../model/event/event.entity';
 import { User } from 'model/user/user.entity';
 import { EventCategory } from '../model/event/event-category.enum';
-import * as math from "mathjs";
-import {EventAttendee} from "../model/event-attendee/event-attendee.entity";
+import * as math from 'mathjs';
+import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
 
 @Controller('event')
 export class EventController {
@@ -62,7 +62,7 @@ export class EventController {
         type: EventCategory[i],
         quantity: filteredEventsOneType.length,
         MeanRating: rating,
-        MeanAttendance: attendance
+        MeanAttendance: attendance,
       });
     }
     return arr;
@@ -71,7 +71,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly, @Query('ratedOnly') ratedOnly) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -86,6 +86,7 @@ export class EventController {
     let onlyUndecided;
     let onlyAttendanceUnchecked;
     let onlyRatingPending;
+    let onlyRated;
     let excludingOwn;
 
     if (lat != null) lat = Number(lat);
@@ -97,12 +98,15 @@ export class EventController {
     attendanceUnchecked = (attendanceUnchecked === 'true');
     ratingPending = (ratingPending === 'true');
     if (attendanceUnchecked || ratingPending) past = true;
-    if (ratingPending){
-        let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user)
-        filteredEvents = EventAttendeeConfirmed.map(ea => ea.event)
-        onlyRatingPending = true;
+    if (ratingPending) {
+      let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user);
+      filteredEvents = EventAttendeeConfirmed.map(ea => ea.event);
+      onlyRatingPending = true;
     }
-
+    if (onlyRated) {
+      filteredEvents = filteredEvents.filter(event => event.rating != null);
+      ratedOnly = true;
+    }
     if (ownOnly && excludeOwn) {
       warnings.push('You are using ownOnly and excludeOwn at the same time. This will never produce any results.');
     }
@@ -129,11 +133,11 @@ export class EventController {
     } else {
       showingPast = true;
     }
-    if(undecidedOnly){
-      filteredEvents.filter(this.eventService.isUndecided)
+    if (undecidedOnly) {
+      filteredEvents.filter(this.eventService.isUndecided);
       onlyUndecided = true;
     }
-    if (attendanceUnchecked){
+    if (attendanceUnchecked) {
       filteredEvents = filteredEvents.filter(event => event.attendance == null);
       filteredEvents = filteredEvents.filter(event => moment(event.endDate).isBefore(new Date()));
       filteredEvents = filteredEvents.filter(event => event.user && event.user.id === user.id);
@@ -203,7 +207,7 @@ export class EventController {
       showing = filteredEvents.length;
       total = allEvents.length;
     }
-    filteredEvents = _.sortBy(filteredEvents, e => e.startDate)
+    filteredEvents = _.sortBy(filteredEvents, e => e.startDate);
     const eventsPayload = filteredEvents.map(this.transformEventType);
     return {
       filter: {
@@ -216,6 +220,7 @@ export class EventController {
         onlyCreatedByMe,
         onlyRatingPending,
         onlyUndecided,
+        onlyRated,
         latitude: lat,
         longitude: long,
         radius,
@@ -291,10 +296,10 @@ export class EventController {
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     const oldAttendees = await this.eventService.getEventAttendingList(event);
     const newAttendees = request.body;
-    if(!_.isArray(newAttendees)) throw new BadRequestException('Body must be an array of attendees');
-    if (event.attendance != null)  throw new BadRequestException('You have already check the attendance of this event');
-    if(newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
-    await this.eventService.setEventAttendanceList(event, newAttendees)
+    if (!_.isArray(newAttendees)) throw new BadRequestException('Body must be an array of attendees');
+    if (event.attendance != null) throw new BadRequestException('You have already check the attendance of this event');
+    if (newAttendees == null) throw new BadRequestException('You need to provide an "attendees" array containing their ids');
+    await this.eventService.setEventAttendanceList(event, newAttendees);
   }
 
   @Post(':id/rate')
@@ -303,10 +308,10 @@ export class EventController {
     if (request.user == null) throw new BadRequestException('You need to be logged to rate an event');
     const event = await this.eventService.oneEvent(id);
     const rating = request.body.rating;
-    if(rating == null) throw new BadRequestException('You must provide a rating');
+    if (rating == null) throw new BadRequestException('You must provide a rating');
     //if (event.attendance == null) throw new BadRequestException('The attendance of this event has not been checked by casal yet ' );
-    await this.eventService.rateEvent(request.user, event, rating)
-    return {}
+    await this.eventService.rateEvent(request.user, event, rating);
+    return {};
   }
 
   @Post(':id/attend')
