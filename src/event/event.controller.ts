@@ -90,12 +90,12 @@ export class EventController {
 
     if (lat != null) lat = Number(lat);
     if (long != null) long = Number(long);
-    past = Boolean(past);
-    forMe = Boolean(forMe);
-    ownOnly = Boolean(ownOnly);
-    excludeOwn = Boolean(excludeOwn);
-    attendanceUnchecked = Boolean(attendanceUnchecked);
-    ratingPending = Boolean(ratingPending);
+    past = (past === 'true');
+    forMe = (forMe === 'true');
+    ownOnly = (ownOnly === 'true');
+    excludeOwn = (excludeOwn === 'true');
+    attendanceUnchecked = (attendanceUnchecked === 'true');
+    ratingPending = (ratingPending === 'true');
     if (attendanceUnchecked || ratingPending) past = true;
     if (ratingPending){
         let EventAttendeeConfirmed: EventAttendee[] = await this.eventService.getEventAttendingListwithRatingPending(user)
