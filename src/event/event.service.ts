@@ -12,6 +12,7 @@ import {NotificationsService} from "./notifications/notifications.service";
 
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import _date = moment.unitOfTime._date;
 
 @Injectable()
 export class EventService {
@@ -47,6 +48,8 @@ export class EventService {
     return await this.eventRepository.update({ id }, partialEntity as any);
   }
 
+
+
   async deleteOwnEvent(user, id) {
     let event = await this.oneEvent(id);
     if (event == null) throw new BadRequestException('This event does not exist');
@@ -56,7 +59,7 @@ export class EventService {
     let AttendingListDeletedEvent = await this.getEventAttendingList(event);
     let UserToBeNotified: User []= AttendingListDeletedEvent.map(ea => ea.user);
     console.log(UserToBeNotified);
-    let body: string = 'The event with name '+ event.name + ' has been deleted';
+    let body: string = 'La actividad '+ event.name + ' ha sido borrada';
     console.log(body);
     this.notificationsService.addNotification(UserToBeNotified, body);
     AttendingListDeletedEvent.forEach(ea =>  this.eventAttendeeRepository.delete({ id: ea.id }))
@@ -108,6 +111,13 @@ export class EventService {
     if (oldAttendees.length > 0) event.attendance = (newAttendees.length/oldAttendees.length)
     else event.attendance = 0;
     await this.eventRepository.save(event);
+
+    //Notifications
+    let UserToBeNotified: User []= newAttendees.map(ea => ea.user);
+    console.log(UserToBeNotified);
+    let body: string = '¡La actividad  '+ event.name + ' ya la puede valorar!';
+    console.log(body);
+    this.notificationsService.addNotification(UserToBeNotified, body);
 
     if (newAttendees.length != 0){
       for (const attendee of attendees) {

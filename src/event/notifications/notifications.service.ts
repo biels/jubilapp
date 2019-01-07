@@ -7,6 +7,9 @@ import * as moment from 'moment';
 import { UserRepository } from '../../model/user/user.repository';
 import Expo from 'expo-server-sdk';
 import {User} from "../../model/user/user.entity";
+import {EventAttendee} from "../../model/event-attendee/event-attendee.entity";
+import {Event} from "../../model/event/event.entity";
+import {Repository} from "typeorm";
 
 // Create a new Expo SDK client
 
@@ -16,6 +19,8 @@ export class NotificationsService {
   constructor(
     @InjectRepository(EventRepository)
     private readonly eventRepository: EventRepository,
+    @InjectRepository(EventAttendee)
+    private readonly eventAttendeeRepository: Repository<EventAttendee>,
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
   ) {
@@ -30,9 +35,11 @@ export class NotificationsService {
   private scheduleNotifications() {
 
     schedule.scheduleJob('*/5 * * * *', fireDate => {
+      this.notifynextevents();
       this.notifyAllTokens();
     });
   }
+
 
   async addNotification (users: User[], body: string) {
     users.filter(user => user.pushToken != null)
@@ -44,6 +51,32 @@ export class NotificationsService {
             data: { withSome: 'data' },
           });
         });
+  }
+
+  async notifynextevents() {
+    let datenow = new Date();
+
+    var datenotification = new Date(datenow);
+
+    var durationInMinutes = 5;
+
+    datenotification.setMinutes(datenow.getMinutes() + durationInMinutes);
+    console.log(datenow);
+    console.log(datenotification);
+
+    let EventSoon = await this.eventRepository.find({relations: ['user']});
+    EventSoon = EventSoon.filter(event => event.startDate >= datenow && event.startDate <= datenotification);
+    console.log(EventSoon);
+    for (const event of EventSoon) {
+      let Attendees = await this.eventAttendeeRepository.find({ where: { event }, relations: ['user'] });
+      Attendees = Attendees.filter(EventAttendee => EventAttendee.attending == true);
+      //Notifications
+      let UserToBeNotified: User [] = Attendees.map(ea => ea.user);
+      console.log(UserToBeNotified);
+      let body: string = '¡La actividad  ' + event.name + ' empieza pronto!';
+      console.log(body);
+      this.addNotification(UserToBeNotified, body);
+    }
   }
 
   private async notifyAllTokens() {
