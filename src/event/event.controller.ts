@@ -134,7 +134,14 @@ export class EventController {
       showingPast = true;
     }
     if (undecidedOnly) {
-      filteredEvents.filter(event => this.eventService.isUndecided(event, user));
+      const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isUndecided(event, user)));
+      filteredEvents = filteredEvents.filter((value, index) => checklist[index])
+      // filteredEvents = filteredEvents.filter(event => {
+      //
+      //   // const b = await this.eventService.isUndecided(event, user);
+      //   // console.log(`b`, b);
+      // });
+
       onlyUndecided = true;
     }
     if (attendanceUnchecked) {
