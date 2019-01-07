@@ -86,6 +86,8 @@ export class EventService {
   }
 
   async setEventAttendanceList(event: Event, attendees: EventAttendee[]) {
+    if(event == null) throw new BadRequestException("Event not found");
+    if(attendees == null) throw new BadRequestException("Attendee list not found");
     let oldAttendees = await this.getEventAttendingList(event);
     oldAttendees = oldAttendees.filter(EventAttendee => EventAttendee.attending == true);
     const newAttendees = attendees.filter(EventAttendee => EventAttendee.attendanceConfirmed == true);
