@@ -34,7 +34,7 @@ export class NotificationsService {
 
   private scheduleNotifications() {
 
-    schedule.scheduleJob('*/5 * * * *', fireDate => {
+    schedule.scheduleJob('*/1 * * * *', fireDate => {
       this.notifyNextEvents();
       this.notifyAllTokens();
     });
@@ -58,7 +58,7 @@ export class NotificationsService {
 
     let notificationDate = new Date(currentDate);
 
-    let durationInMinutes = 5;
+    let durationInMinutes = 1;
 
     notificationDate.setMinutes(currentDate.getMinutes() + durationInMinutes);
 
