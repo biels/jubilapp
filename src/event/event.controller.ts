@@ -291,7 +291,7 @@ export class EventController {
     const event = await this.eventService.oneEvent(id);
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
     if(event.user.NIF != null){
-      (event as any).casalName = event.user.name
+      (event as any).casalName = event.user.name || ''
     }
     return { event: this.transformEventType(event) };
   }
