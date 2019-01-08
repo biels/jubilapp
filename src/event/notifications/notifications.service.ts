@@ -6,6 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { UserRepository } from '../../model/user/user.repository';
 import Expo from 'expo-server-sdk';
+import { User } from '../../model/user/user.entity';
+import { EventAttendee } from '../../model/event-attendee/event-attendee.entity';
+import { Event } from '../../model/event/event.entity';
+import { Repository } from 'typeorm';
 
 // Create a new Expo SDK client
 
@@ -13,9 +17,10 @@ import Expo from 'expo-server-sdk';
 export class NotificationsService {
 
   constructor(
-    private readonly eventService: EventService,
     @InjectRepository(EventRepository)
     private readonly eventRepository: EventRepository,
+    @InjectRepository(EventAttendee)
+    private readonly eventAttendeeRepository: Repository<EventAttendee>,
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
   ) {
@@ -25,29 +30,58 @@ export class NotificationsService {
   }
 
   expo: Expo;
+  private messages: any = [];
 
   private scheduleNotifications() {
 
     schedule.scheduleJob('*/5 * * * *', fireDate => {
+      this.notifyNextEvents();
       this.notifyAllTokens();
     });
   }
 
-  private async notifyAllTokens() {
-    console.log(`Notifiying all tokens...`);
-    const users = await this.userRepository.find();
-    let messages = [];
-    //TODO Implement specific notifications
+
+  async addNotification(users: User[], body: string) {
     users.filter(user => user.pushToken != null)
       .forEach(user => {
-        messages.push({
+        this.messages.push({
           to: user.pushToken,
           sound: 'default',
-          body: 'AAThis is a test notification',
+          body: body,
           data: { withSome: 'data' },
         });
       });
-    let chunks = this.expo.chunkPushNotifications(messages);
+  }
+
+  async notifyNextEvents() {
+    let currentDate = new Date();
+
+    let notificationDate = new Date(currentDate);
+
+    let durationInMinutes = 5;
+
+    notificationDate.setMinutes(currentDate.getMinutes() + durationInMinutes);
+
+    let upcomingEvents: Event[] = await this.eventRepository.find({ relations: ['user'] });
+    upcomingEvents = upcomingEvents.filter(event => event.startDate >= currentDate && event.startDate <= notificationDate);
+    console.log(upcomingEvents);
+    for (const upcomingEvent of upcomingEvents) {
+      let eventAttendees = await this.eventAttendeeRepository.find({
+        where: { event: upcomingEvent },
+        relations: ['user'],
+      });
+      eventAttendees = eventAttendees.filter(eventAttendee => eventAttendee.attending == true);
+      //Notifications
+      let userToBeNotified: User[] = eventAttendees.map(ea => ea.user);
+      let body: string = '¡La actividad  ' + upcomingEvent.name + ' empieza pronto!';
+      console.log('TBN', userToBeNotified, body);
+      await this.addNotification(userToBeNotified, body);
+    }
+  }
+
+  private async notifyAllTokens() {
+    console.log(`Notifiying all tokens...`);
+    let chunks = this.expo.chunkPushNotifications(this.messages);
     let tickets = [];
     (async () => {
       // Send the chunks to the Expo push notification service. There are
@@ -68,5 +102,6 @@ export class NotificationsService {
       }
     })();
     console.log(`Tickets:`, tickets);
+    this.messages = [];
   }
 }

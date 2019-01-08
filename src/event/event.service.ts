@@ -7,13 +7,18 @@ import { Event } from '../model/event/event.entity';
 import { EventBody } from './interfaces/event-body.interface';
 import { EventCategory } from '../model/event/event-category.enum';
 import { EventAttendee } from '../model/event-attendee/event-attendee.entity';
+import { NotificationsService } from './notifications/notifications.service';
+
+
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import _date = moment.unitOfTime._date;
 
 @Injectable()
 export class EventService {
 
   constructor(
+    private readonly notificationsService: NotificationsService,
     @InjectRepository(EventRepository)
     private readonly eventRepository: EventRepository,
     @InjectRepository(EventAttendee)
@@ -43,7 +48,24 @@ export class EventService {
     return await this.eventRepository.update({ id }, partialEntity as any);
   }
 
+
+
   async deleteOwnEvent(user, id) {
+    const allEvents: Event[] = await this.allEvents();
+    let filteredEvents: Event[] = allEvents;
+    let eventofuser = filteredEvents.filter(event => event.id == id);
+    let userevent = eventofuser.map(ea => ea.user).pop();
+    let event = await this.oneEvent(id);
+    console.log(userevent);
+    console.log(event);
+    if (userevent.id != user.id) throw new BadRequestException('You can not delete an event you are not the owner');
+    let AttendingListDeletedEvent = await this.getEventAttendingList(event);
+    let userToBeNotified: User [] = AttendingListDeletedEvent.map(ea => ea.user);
+    console.log(userToBeNotified);
+    let body: string = 'La actividad ' + event.name + ' ha sido borrada';
+    console.log(body);
+    await this.notificationsService.addNotification(userToBeNotified, body);
+    AttendingListDeletedEvent.forEach(ea => this.eventAttendeeRepository.delete({ id: ea.id }));
     return await this.eventRepository.delete({ id });
   }
 
@@ -97,6 +119,13 @@ export class EventService {
     else event.attendance = 0;
     await this.eventRepository.save(event);
 
+    //Notifications
+    let UserToBeNotified: User [] = newAttendees.map(ea => ea.user); //FIXME
+    console.log(UserToBeNotified);
+    let body: string = '¡La actividad  ' + event.name + ' ya la puede valorar!';
+    console.log(body);
+    this.notificationsService.addNotification(UserToBeNotified, body);
+
     if (newAttendees.length != 0) {
       for (const attendee of attendees) {
         let eventAttendee: Partial<EventAttendee> = await this.eventAttendeeRepository.findOne({
@@ -125,7 +154,6 @@ export class EventService {
       throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
     if (eventAttende && !eventAttende.attendanceConfirmed)
       throw new BadRequestException('You have to have not assisted to the event or your assistance has not been confirmed yet');
-    // User has attended the event
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
     await this.updateEventRating(event);
