@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  BadRequestException, ConflictException,
   Controller,
   Delete,
   Get,
@@ -341,6 +341,7 @@ export class EventController {
   async attendToEvent(@Req() request, @Param('id') id) {
     if (request.user == null) throw new BadRequestException('You need to be logged in to attend to an event');
     const event = await this.eventService.oneEvent(id);
+    if(await this.eventService.isUserBusyFor(request.user, event)) throw new ConflictException('You are already attending another event that would overlap with this one')
     await this.eventService.registerAttendee(request.user, event, true);
     return { attending: true };
   }

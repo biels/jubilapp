@@ -180,4 +180,22 @@ export class EventService {
     console.log(isMaxCapacity);
     return event.capacity > isMaxCapacity;
   }
+  async isUserBusyFor(user: User, event: Event){
+    const eventAttendees = await this.eventAttendeeRepository.find({where: {user}, relations: ['event']})
+    return eventAttendees
+      .filter(ea => ea.attending)
+      .map(ea => ea.event)
+      .filter(e => moment(e.startDate).isAfter(new Date()))
+      .filter(e => {
+        let {startDate, endDate} = event;
+        if(startDate == null) return false;
+        endDate = endDate || moment(startDate).add(1, 'hour').toDate()
+
+        const checkBound = (boundDate) => {
+          return moment(boundDate).isBetween(startDate, endDate);
+        }
+        return checkBound(e.startDate) || checkBound(e.endDate || moment(endDate).add(1, 'hour').toDate());
+      })
+      .length > 0
+  }
 }
