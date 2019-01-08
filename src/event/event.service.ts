@@ -37,7 +37,7 @@ export class EventService {
   }
 
   async oneEvent(id) {
-    return this.eventRepository.findOne(id);
+    return this.eventRepository.findOne(id, {relations: ['user']});
   }
 
   async createEvent(user: User, body: EventBody) {
