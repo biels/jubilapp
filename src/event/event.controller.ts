@@ -258,10 +258,12 @@ export class EventController {
     if (request.user == null) throw new BadRequestException('You need to be logged in to view your events');
     const attendees = await this.eventService.getUserAttendingList(request.user);
     const attendeeToEvent = a => this.transformEventType(a.event);
+    const sortByStartDate = arr => _.sortBy(arr, (i: Event) => i.startDate)
+      .filter((e: Event) => moment(e.startDate).isAfter(new Date()));
     return {
       events: {
-        yes: attendees.filter(a => a.attending).map(attendeeToEvent),
-        no: attendees.filter(a => !a.attending).map(attendeeToEvent),
+        yes: sortByStartDate(attendees.filter(a => a.attending).map(attendeeToEvent)),
+        no: sortByStartDate(attendees.filter(a => !a.attending).map(attendeeToEvent)),
       },
     };
   }
