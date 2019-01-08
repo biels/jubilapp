@@ -71,7 +71,7 @@ export class EventController {
 
   @Get()
   @UseGuards(AuthGuard())
-  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly, @Query('ratedOnly') ratedOnly, @Query('CapacityExceeded') CapacityExceeded) {
+  async get(@Req() request, @Query('lat') lat, @Query('long') long, @Query('fromDate') fromDate, @Query('toDate') toDate, @Query('past') past, @Query('forMe') forMe, @Query('ownOnly') ownOnly, @Query('excludeOwn') excludeOwn, @Query('attendanceUnchecked') attendanceUnchecked, @Query('ratingPending') ratingPending, @Query('undecidedOnly') undecidedOnly, @Query('ratedOnly') ratedOnly, @Query('capacityExceeded') capacityExceeded) {
     const allEvents: Event[] = await this.eventService.allEvents();
     const user: User = request.user;
     let showing, total, totalAfterPast;
@@ -98,8 +98,11 @@ export class EventController {
     excludeOwn = (excludeOwn === 'true');
     attendanceUnchecked = (attendanceUnchecked === 'true');
     ratingPending = (ratingPending === 'true');
+    ratedOnly = (ratedOnly === 'true');
+    capacityExceeded = (capacityExceeded === 'true');
+
     if (attendanceUnchecked || ratingPending) past = true;
-    if (CapacityExceeded) {
+    if (capacityExceeded) {
       const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isMaxCapacity(event)));
       filteredEvents = filteredEvents.filter((value, index) => checklist[index])
       onlyCapacityExceeded = true;
