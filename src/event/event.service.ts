@@ -12,7 +12,6 @@ import { NotificationsService } from './notifications/notifications.service';
 
 import * as moment from 'moment';
 import * as _ from 'lodash';
-import _date = moment.unitOfTime._date;
 
 @Injectable()
 export class EventService {
@@ -47,8 +46,6 @@ export class EventService {
     if (body.type) partialEntity.type = EventCategory[body.type];
     return await this.eventRepository.update({ id }, partialEntity as any);
   }
-
-
 
   async deleteOwnEvent(user, id) {
     const allEvents: Event[] = await this.allEvents();
@@ -154,6 +151,7 @@ export class EventService {
       throw new BadRequestException('The activity has not started yet. You cannot rate it yet.');
     if (eventAttende && !eventAttende.attendanceConfirmed)
       throw new BadRequestException('You have to have not assisted to the event or your assistance has not been confirmed yet');
+    // User has attended the event
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
     await this.updateEventRating(event);
@@ -168,5 +166,10 @@ export class EventService {
   async isUndecided(event: Event, user: User){
     const eventAttendee = await this.eventAttendeeRepository.findOne({event, user});
     return eventAttendee == null;
+  }
+  async isMaxCapacity(event: Event){
+    let isMaxCapacity = await this.eventAttendeeRepository.count({ where: { event }, relations: ['user'] });
+    console.log(isMaxCapacity)
+    return event.capacity > isMaxCapacity ;
   }
 }
