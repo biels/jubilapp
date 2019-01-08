@@ -12,6 +12,7 @@ import { NotificationsService } from './notifications/notifications.service';
 
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import { UserRepository } from '../model/user/user.repository';
 
 @Injectable()
 export class EventService {
@@ -22,6 +23,8 @@ export class EventService {
     private readonly eventRepository: EventRepository,
     @InjectRepository(EventAttendee)
     private readonly eventAttendeeRepository: Repository<EventAttendee>,
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {
   }
 
@@ -117,11 +120,11 @@ export class EventService {
     await this.eventRepository.save(event);
 
     //Notifications
-    let UserToBeNotified: User [] = newAttendees.map(ea => ea.user); //FIXME
-    console.log(UserToBeNotified);
+    let userToBeNotified: User [] = newAttendees.map(ea => ea.user); //FIXME
+    console.log(userToBeNotified);
     let body: string = '¡La actividad  ' + event.name + ' ya la puede valorar!';
     console.log(body);
-    this.notificationsService.addNotification(UserToBeNotified, body);
+    this.notificationsService.addNotification(userToBeNotified, body);
 
     if (newAttendees.length != 0) {
       for (const attendee of attendees) {
@@ -155,6 +158,9 @@ export class EventService {
     eventAttende.rating = rating;
     await this.eventAttendeeRepository.save(eventAttende);
     await this.updateEventRating(event);
+    user.tokens += 1;
+    if (user.tokens > 20) user.tokens = 1;
+    await this.userRepository.save(user);
   }
 
   async updateEventRating(event: Event) {
@@ -163,13 +169,15 @@ export class EventService {
     event.rating = _.mean(ratings);
     await this.eventRepository.save(event);
   }
-  async isUndecided(event: Event, user: User){
-    const eventAttendee = await this.eventAttendeeRepository.findOne({event, user});
+
+  async isUndecided(event: Event, user: User) {
+    const eventAttendee = await this.eventAttendeeRepository.findOne({ event, user });
     return eventAttendee == null;
   }
-  async isMaxCapacity(event: Event){
+
+  async isMaxCapacity(event: Event) {
     let isMaxCapacity = await this.eventAttendeeRepository.count({ where: { event }, relations: ['user'] });
-    console.log(isMaxCapacity)
-    return event.capacity > isMaxCapacity ;
+    console.log(isMaxCapacity);
+    return event.capacity > isMaxCapacity;
   }
 }

@@ -327,7 +327,6 @@ export class EventController {
     const event = await this.eventService.oneEvent(id);
     const rating = request.body.rating;
     if (rating == null) throw new BadRequestException('You must provide a rating');
-    //if (event.attendance == null) throw new BadRequestException('The attendance of this event has not been checked by casal yet ' );
     await this.eventService.rateEvent(request.user, event, rating);
     return {};
   }
