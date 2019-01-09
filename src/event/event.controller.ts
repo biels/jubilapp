@@ -1,5 +1,6 @@
 import {
-  BadRequestException, ConflictException,
+  BadRequestException,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -104,7 +105,7 @@ export class EventController {
     if (attendanceUnchecked || ratingPending) past = true;
     if (capacityExceeded) {
       const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isMaxCapacity(event)));
-      filteredEvents = filteredEvents.filter((value, index) => checklist[index])
+      filteredEvents = filteredEvents.filter((value, index) => checklist[index]);
       onlyCapacityExceeded = true;
     }
 
@@ -145,7 +146,7 @@ export class EventController {
     }
     if (undecidedOnly) {
       const checklist = await Promise.all(filteredEvents.map(async event => await this.eventService.isUndecided(event, user)));
-      filteredEvents = filteredEvents.filter((value, index) => checklist[index])
+      filteredEvents = filteredEvents.filter((value, index) => checklist[index]);
       // filteredEvents = filteredEvents.filter(event => {
       //
       //   // const b = await this.eventService.isUndecided(event, user);
@@ -290,8 +291,9 @@ export class EventController {
   async getOne(@Param('id') id) {
     const event = await this.eventService.oneEvent(id);
     if (event == null) throw new NotFoundException(`Event with id ${id} does not exist`);
-    if(event.user.NIF != null){
-      (event as any).casalName = event.user.name || ''
+    (event as any).casalName = '';
+    if (event.user.NIF != null) {
+      (event as any).casalName = event.user.name || '';
     }
     return { event: this.transformEventType(event) };
   }
@@ -341,7 +343,11 @@ export class EventController {
   async attendToEvent(@Req() request, @Param('id') id) {
     if (request.user == null) throw new BadRequestException('You need to be logged in to attend to an event');
     const event = await this.eventService.oneEvent(id);
-    if(await this.eventService.isUserBusyFor(request.user, event)) throw new ConflictException('You are already attending another event that would overlap with this one')
+    const isBusy = await this.eventService.isUserBusyFor(request.user, event);
+    if (isBusy) {
+      console.log(`${request.user.name} is already busy for ${event.name}`);
+      throw new ConflictException('You are already attending another event that would overlap with this one');
+    }
     await this.eventService.registerAttendee(request.user, event, true);
     return { attending: true };
   }
