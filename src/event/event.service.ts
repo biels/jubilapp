@@ -178,7 +178,8 @@ export class EventService {
   async isMaxCapacity(event: Event) {
     let isMaxCapacity = await this.eventAttendeeRepository.count({ where: { event }, relations: ['user'] });
     console.log(isMaxCapacity);
-    return event.capacity > isMaxCapacity;
+    if (event.capacity == null) false;
+    else return event.capacity > isMaxCapacity ;
   }
 
   async isUserBusyFor(user: User, event: Event) {
