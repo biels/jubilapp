@@ -37,7 +37,7 @@ export class EventService {
   }
 
   async oneEvent(id) {
-    return this.eventRepository.findOne(id, {relations: ['user']});
+    return this.eventRepository.findOne(id, { relations: ['user'] });
   }
 
   async createEvent(user: User, body: EventBody) {
@@ -180,22 +180,22 @@ export class EventService {
     console.log(isMaxCapacity);
     return event.capacity > isMaxCapacity;
   }
-  async isUserBusyFor(user: User, event: Event){
-    const eventAttendees = await this.eventAttendeeRepository.find({where: {user}, relations: ['event']})
-    return eventAttendees
+
+  async isUserBusyFor(user: User, event: Event) {
+    console.log(`Checking busy for user ${user.name} and event ${event.name}`);
+    const eventAttendees = await this.eventAttendeeRepository.find({ where: { user }, relations: ['event'] });
+    const overlap = eventAttendees
       .filter(ea => ea.attending)
       .map(ea => ea.event)
       .filter(e => moment(e.startDate).isAfter(new Date()))
       .filter(e => {
-        let {startDate, endDate} = event;
-        if(startDate == null) return false;
-        endDate = endDate || moment(startDate).add(1, 'hour').toDate()
-
-        const checkBound = (boundDate) => {
-          return moment(boundDate).isBetween(startDate, endDate);
-        }
-        return checkBound(e.startDate) || checkBound(e.endDate || moment(endDate).add(1, 'hour').toDate());
+        let { startDate, endDate } = event;
+        if (startDate == null || endDate == null) return false;
+        const checkBound = (boundDate) => moment(boundDate).isBetween(startDate, endDate, 'minute', '[]');
+        return checkBound(e.startDate) || checkBound(e.endDate);
       })
-      .length > 0
+    ;
+    console.log(`Overlap for user ${user.name} and event ${event.name}`);
+    return overlap.length > 0;
   }
 }
